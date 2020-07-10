@@ -100,13 +100,9 @@ p <- 3
 #############################
 
 m <- 10
-time_rep <- rep(0,n)
-evals <- rep(0,n)
-estimates <- list()
 fails <- 0
-count <- 0
 
-  start <- c(0.5, 1, 2)
+  start <- c(0.3, 1, 2.5)
   
   epsilon <- 1e-7
   current <- start

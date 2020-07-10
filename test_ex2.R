@@ -1,4 +1,7 @@
-set.seed(1)
+library(pracma)
+library(SQUAREM)
+library(BfgsQN)
+
 
 quadratic <- function(a,b,c){
   if(delta(a,b,c) > 0){ # first case D>0
@@ -19,7 +22,7 @@ delta<-function(a,b,c){
   b^2-4*a*c
 }
 
-rayleigh <- function(x, A, B){
+rayleigh <- function(x, A, B, dir){
   x <- as.matrix(x)
   num <- t(x) %*% A %*% x
   denom <- t(x) %*% B %*% x
@@ -47,8 +50,12 @@ update <- function(x, A, B, dir = c("ascent", "descent")){
   C <- quadratic(a, b, c)
   x1 <- u + C[1]*v
   x2 <- u + C[2]*v
-  R1 <- rayleigh(x1, A, B)
-  R2 <- rayleigh(x2, A, B)
+  num <- t(x1) %*% A %*% x1
+  denom <- t(x1) %*% B %*% x1
+  R1 <- num/denom
+  num <- t(x2) %*% A %*% x2
+  denom <- t(x2) %*% B %*% x2
+  R2 <- num/denom
 
   if(R1 > R2) {
     ascent <- x1
@@ -73,14 +80,14 @@ update_s <- function(x, A, B, dir = c("ascent", "descent"), s){
   return(y)
 }
 
-p <- 10
-C <- matrix(runif(p^2, min = -5, max = 5), nrow = p, ncol = p)
-D <- matrix(runif(p^2, min = -5, max = 5), nrow = p, ncol = p)
+dim <- 100
+C <- matrix(runif(dim^2, min = -5, max = 5), nrow = dim, ncol = dim)
+D <- matrix(runif(dim^2, min = -5, max = 5), nrow = dim, ncol = dim)
 A <- C + t(C)
 B <- D %*% t(D)
 
-start <- as.matrix(rep(100, p))
-rep <- 100
+start <- as.matrix(rep(1, dim))
+
 
 ###########################################
 ## Naive Algorithm
@@ -89,172 +96,152 @@ rep <- 100
 theta <- start
 current <- theta
 rel.diff <- 100
-epsilon <- 1e-9
-iter <- 0
-store_MM <- current
+epsilon <- 1e-7
+feval <- 0
+objeval <- 0
+dir <- "ascent"
 
 start.time <- Sys.time()
 while((rel.diff > epsilon))
 {
-  iter <- iter + 1
-  if(iter %% 1000 == 0) print(iter)
-  theta <- update_s(current, A, B, dir = "descent", 2)
-  rel.diff <- abs(rayleigh(theta, A, B) - rayleigh(current, A, B))/(abs(rayleigh(current, A, B)) + 1)
+  feval <- feval + 1
+  if(feval %% 1000 == 0) print(feval)
+  theta <- update(current, A, B, dir)
+  obj.theta <- rayleigh(theta, A, B, dir)
+  obj.current <- rayleigh(current, A, B, dir)
+  objeval <- objeval + 2
+  rel.diff <- abs(obj.theta - obj.current)/(abs(obj.current) + 1)
   current <- theta
-  store_MM <- rbind(store_MM, theta)
 }
 end.time <- Sys.time()
-print(iter)
-print(theta)
+
+print(feval)
+print(objeval)
+print(rayleigh(theta, A, B, dir))
 print(end.time - start.time)
 
 ##########################################
 ## Zhou's quasi-Newton for q=1
 ##########################################
 
-epsilon <- 1e-9
-evals <- rep(0, rep)
-time <- rep(0, rep)
-store_Zhou <- matrix(0, nrow = rep, ncol = p)
-
-for (i in 1:rep){
-  print(i)
-  theta <- start
-  current <- theta
-  H.current <- diag(p)
-  H.next <- H.current
-  rel.diff <- 100
-  iter <- 0
+theta <- start
+current <- theta
+rel.diff <- 100
+epsilon <- 1e-5
+iter <- 0
+feval <- 0
+objeval <- 0
+fallback <- 0
+dir <- "ascent"
+max.iter <- 1e4
 
 start.time <- Sys.time()
-while(rel.diff > epsilon){
+while(rel.diff > epsilon && iter <= max.iter){
 
   iter <- iter + 1
-  next1 <- update_s(current, A, B, dir = "descent", 2)
-  next2 <- update_s(next1, A, B, dir = "descent", 2)
+  if(iter %% 1000 == 0) print(iter)
+  next1 <- update(current, A, B, dir)
+  next2 <- update(next1, A, B, dir)
+  feval <- feval + 2
   u <- as.matrix(next1 - current)
   v <- as.matrix(next2 - next1)
-  foo <- -(dot(u,u))/(dot(u, (v-u)))
-  theta <- (1 - foo)*next1 + foo*next2
-  if(rayleigh(theta, A, B) < rayleigh(current, A, B)){
+  alpha <- -(dot(u,u))/(dot(u, (v-u)))
+  theta <- (1 - alpha)*next1 + alpha*next2
+  if(rayleigh(theta, A, B, dir) < rayleigh(current, A, B, dir)){
     theta <- next2
+    fallback <- fallback + 1
+    print("fall")
   }
-  rel.diff <- abs(rayleigh(theta, A, B) - rayleigh(current, A, B))/(abs(rayleigh(current, A, B)) + 1)
+  obj.theta <- rayleigh(theta, A, B, dir)
+  obj.current <- rayleigh(current, A, B, dir)
+  objeval <- objeval + 2
+  rel.diff <- abs(obj.theta - obj.current)/(abs(obj.current) + 1)
   current <- theta
 }
+
 end.time <- Sys.time()
-time[i] <- end.time - start.time
-evals[i] <- iter
-store_Zhou[i,] <- theta
-}
+print(feval)
+print(objeval)
+print(rayleigh(theta, A, B, dir))
+print(end.time - start.time)
+print(fallback/iter)
 
-print(mean(time))
-print(mean(evals))
-print(colMeans(store_BFGS1))
+########################################
+### SQUAREM -1
+########################################
 
 
+epsilon <- 1e-7
 
+start.time <- Sys.time()
+fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K = 1, method=1, maxiter = 1e4, tol = epsilon))
+end.time <- Sys.time()
+
+print(fp$value.objfn)
+print(fp$fpevals)
+print(fp$objfevals)
+print(end.time - start.time)
+
+########################################
+### SQUAREM -2
+########################################
+
+
+epsilon <- 1e-7
+
+start.time <- Sys.time()
+fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K = 1, method=2, maxiter = 1e4, tol = epsilon))
+end.time <- Sys.time()
+
+print(fp$value.objfn)
+print(fp$fpevals)
+print(fp$objfevals)
+print(end.time - start.time)
+
+########################################
+### SQUAREM -3
+########################################
+
+
+epsilon <- 1e-7
+
+start.time <- Sys.time()
+fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K = 1, method=3, maxiter = 1e4, tol = epsilon))
+end.time <- Sys.time()
+
+print(fp$value.objfn)
+print(fp$fpevals)
+print(fp$objfevals)
+print(end.time - start.time)
 
 ########################################
 ## Classical BFGS
 ########################################
 
-epsilon <- 1e-9
-evals <- rep(0, rep)
-time <- rep(0, rep)
-store_BFGS1 <- matrix(0, nrow = rep, ncol = p)
+epsilon <- 1e-7
 
-for (i in 1:rep){
-  print(i)
-  theta <- start
-  current <- theta
-  H.current <- diag(p)
-  H.next <- H.current
-  rel.diff <- 100
-  iter <- 0
-
-  start.time <- Sys.time()
-  while(rel.diff > epsilon){
-
-    iter <- iter + 1
-    next1 <- update(current, A, B, dir = "descent")
-    next2 <- update(next1, A, B, dir = "descent")
-
-    G.current <- current - next1
-    theta <- current - H.current %*% G.current
-    if(rayleigh(theta, A, B) < rayleigh(current, A, B)){
-      theta <- next2
-    }
-    G.theta <- theta - update(theta, A, B, dir = "descent")
-
-    u <- as.matrix(theta - current)
-    v <- as.matrix(G.theta - G.current)
-
-    H.next <- (H.current %*% (diag(p) - (v %*% t(v))/dot(v,v))) + (u %*% t(v))/dot(v,v)
-    H.current <- H.next
-    rel.diff <- abs(rayleigh(theta, A, B) - rayleigh(current, A, B))/(abs(rayleigh(current, A, B)) + 1)
-    current <- theta
-    store_BFGS <- rbind(store_BFGS, as.vector(theta))
-}
-
+start.time <- Sys.time()
+fp <- BFGS(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(maxiter = 1e5, tol = epsilon))
 end.time <- Sys.time()
-time[i] <- end.time - start.time
-evals[i] <- iter
-store_BFGS1[i,] <- theta
-}
 
-print(mean(time))
-print(mean(evals))
-print(colMeans(store_BFGS1))
+print(fp$value.objfn)
+print(fp$fpevals)
+print(fp$objfevals)
+print(end.time - start.time)
 
+##########################################
+### L-BFGS
+##########################################
 
+epsilon <- 1e-7
+dir <- "ascent"
 
-########################################
-## Classical BFGS on Zhou's approach
-########################################
+start.time <- Sys.time()
+fp <- LBFGS(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(m = 10, maxiter = 1e4, tol = epsilon, objfn.inc = .1))
+end.time <- Sys.time()
 
-
-epsilon <- 1e-9
-evals <- rep(0, rep)
-time <- rep(0, rep)
-store_BFGS2 <- matrix(0, nrow = rep, ncol = p)
-for (i in 1:rep){
-  print(i)
-  theta <- start
-  current <- theta
-  H.current <- diag(p)
-  H.next <- H.current
-  rel.diff <- 100
-  iter <- 0
-
-  start.time <- Sys.time()
-  while(rel.diff > epsilon){
-
-    iter <- iter + 1
-    next1 <- update(current, A, B, dir = "descent")
-    next2 <- update(next1, A, B, dir = "descent")
-    G.current <- current - next1
-    theta <- current - H.current %*% G.current
-    if(rayleigh(theta, A, B) < rayleigh(current, A, B)){
-      theta <- next2
-    }
-
-    u <- as.matrix(next1 - current)
-    v <- as.matrix(next1 - next2 - G.current)
-    H.next <- (H.current %*% (diag(p) - (v %*% t(v))/dot(v,v))) + (u %*% t(v))/dot(v,v)
-    H.current <- H.next
-    rel.diff <- abs(rayleigh(theta, A, B) - rayleigh(current, A, B))/(abs(rayleigh(current, A, B)) + 1)
-    current <- theta
-  }
-
-  end.time <- Sys.time()
-
-  time[i] <- end.time - start.time
-  evals[i] <- iter
-  store_BFGS2[i,] <- theta
-}
-
-print(mean(time))
-print(mean(evals))
-print(colMeans(store_BFGS2))
+print(fp$value.objfn)
+print(fp$fpevals)
+print(fp$objfevals)
+print(end.time - start.time)
 
