@@ -2,6 +2,7 @@ library(LaplacesDemon)
 library(pracma)
 library(SQUAREM)
 library(BfgsQN)
+source("qnamm.r")
 
 VecToMat <- function(vec, dim){
   a <- matrix(0, dim, dim)
@@ -65,10 +66,10 @@ update_pxem <-  function(par, n, dim, data){
 
 ##################################################
 
-dim <- 50
+dim <- 20
 
 P <- (dim/2)*(dim+3)
-n <- 100
+n <- 60
 mu <- rep(0, dim)
 u <- matrix(rnorm(dim*dim), dim, dim)
 sigma <- t(u) %*% u
@@ -77,10 +78,10 @@ sigma <- t(u) %*% u
 ## EM Algorithm
 ###########################################
 
-N <- 1
+N <- 10
 time_rep <- rep(0,N)
 evals <- rep(0,N)
-obj.values <- rep(0, N)
+obj.values.em <- rep(0, N)
 fails <- 0
 
 for (j in 1:N){
@@ -98,16 +99,16 @@ for (j in 1:N){
   if(fp$convergence){
     time_rep [j] <- end.time - start.time
     evals[j] <- fp$fpevals
-    obj.values[j] <- fp$value.objfn
+    obj.values.em[j] <- fp$value.objfn
   } else{
     time_rep [j] <- NA
     evals[j] <- NA
-    obj.values[j] <- NA
+    obj.values.em[j] <- NA
   }
 }
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(evals, probs = c(0, .5, 1)))
-print(quantile(obj.values, probs = c(0, .5, 1)))
+print(quantile(obj.values.em, probs = c(0, .5, 1)))
 
 ###########################################
 ## PX-EM
@@ -220,7 +221,7 @@ for (j in 1:N){
 
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(evals, probs = c(0, .5, 1)))
-print(quantile(obj.values, probs = c(0, .5, 1)))
+print(quantile(obj.values.pxem, probs = c(0, .5, 1)))
 print(quantile(fallback.prop, probs = c(0, .5, 1)))
 
 
