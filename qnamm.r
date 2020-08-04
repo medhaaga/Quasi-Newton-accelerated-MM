@@ -14,7 +14,7 @@
 #' @references H Zhou, D Alexander, and K Lange. (2011) A quasi-Newton acceleration method for high-dimensional optimization algorithms, Statistics and Computing, 21(2):261-273.
 
 library("corpcor")
-qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, A=A, b=b, L=L) {
+qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4) {
 
   conv <- TRUE
 
@@ -30,14 +30,14 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, A=A, b=b, L=L) {
   for (i in 1:qn) {
     Xhist[,i] <- x
     x_old <- x
-    x <- fx_mm(x, A=A, b=b, L=L)
+    x <- fx_mm(x, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
     U[,i] <- x - x_old
   }
 
 
   W[,1:(qn-1)] <- U[,2:qn]
   x_old <- x
-  x <- fx_mm(x, A=A, b=b, L=L)
+  x <- fx_mm(x, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
   W[,qn] <- x - x_old
 
   fevals <- qn+1
@@ -53,7 +53,7 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, A=A, b=b, L=L) {
     Xhist[,qn+i] <- x
     objval_old <- objval
     x_old <- x
-    x <- fx_mm(x, A=A, b=b, L=L)
+    x <- fx_mm(x, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
 
     #
     #   do one more MM step to accumulate secant pairs
@@ -61,20 +61,20 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, A=A, b=b, L=L) {
 
     U[,old_secant] <- x - x_old
     x_old <- x
-    x <- fx_mm(x, A=A, b=b, L=L)
+    x <- fx_mm(x, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
     W[,old_secant] <- x - x_old
     C[old_secant,] <- t(U[,old_secant,drop=FALSE]) %*% (U-W)
     C[,old_secant] <- t(U) %*% (U[,old_secant,drop=FALSE] - W[,old_secant,drop=FALSE])
     new_secant <- old_secant
     old_secant <- (old_secant %% qn) + 1
-    objval_MM <- fx_obj(x, A=A, b=b, L=L)
+    objval_MM <- fx_obj(x, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
     #
     #   quasi-Newton jump
     #
     #      x_qn <- x_old + V %*% solve(C, t(U)%*%U[,new_secant,drop=FALSE])
     x_qn <- x_old + W %*% pseudoinverse(C) %*% (t(U)%*%U[,new_secant,drop=FALSE])
-    x_qn <- fx_mm(x_qn, A=A, b=b, L=L)
-    objval_QN <- fx_obj(x_qn, A=A, b=b, L=L)
+    x_qn <- fx_mm(x_qn, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
+    objval_QN <- fx_obj(x_qn, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
     #
     #     choose MM vs QN jump
     #

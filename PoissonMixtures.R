@@ -69,7 +69,7 @@ N <- 10
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.em <- rep(0,N)
 fails <- 0
 
 for (j in 1:N){
@@ -83,19 +83,19 @@ if(fp$convergence){
   time_rep [j] <- end.time - start.time
   fpevals[j] <- fp$fpevals
   objevals[j] <- fp$objfevals
-  obj.values[j] <- fp$value.objfn
+  obj.values.em[j] <- fp$value.objfn
 } else{
   time_rep [j] <- NA
   fpevals[j] <- NA
   objevals[j] <- NA
-  obj.values[j] <- NA
+  obj.values.em[j] <- NA
   fails = fails+1
 }
 }
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(fpevals, probs = c(0, .5, 1)))
 print(quantile(objevals, probs = c(0, .5, 1)))
-print(quantile(obj.values, probs = c(0, .5, 1)))
+print(quantile(obj.values.em, probs = c(0, .5, 1)))
 print(fails/N)
 
 
@@ -183,11 +183,11 @@ print(fails/n)
 
 
 N <- 10
-epsilon <- 1e-9
+epsilon <- 1e-7
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.bfgs <- rep(0,N)
 fails <- 0
 
 for (j in 1:N){
@@ -201,12 +201,12 @@ for (j in 1:N){
     time_rep [j] <- end.time - start.time
     fpevals[j] <- fp$fpevals
     objevals[j] <- fp$objfevals
-    obj.values[j] <- fp$value.objfn
+    obj.values.bfgs[j] <- fp$value.objfn
   } else{
     time_rep [j] <- NA
     fpevals[j] <- NA
     objevals[j] <- NA
-    obj.values[j] <- NA
+    obj.values.bgs[j] <- NA
     fails = fails+1
   }
 
@@ -214,7 +214,52 @@ for (j in 1:N){
 time_rep <- time_rep[!is.na(time_rep)]
 fpevals <- fpevals[!is.na(fpevals)]
 objevals <- objevals[!is.na(objevals)]
-obj.values <- obj.values[!is.na(obj.values)]
+obj.values.bfgs <- obj.values[!is.na(obj.values)]
+
+print(quantile(time_rep, probs = c(0, .5, 1)))
+print(quantile(fpevals, probs = c(0, .5, 1)))
+print(quantile(objevals, probs = c(0, .5, 1)))
+print(quantile(obj.values.bfgs, probs = c(0, .5, 1)))
+print(fails/N)
+
+########################################
+## L-BFGS
+########################################
+
+
+N <- 10
+epsilon <- 1e-7
+time_rep <- rep(0,N)
+fpevals <- rep(0,N)
+objevals <- rep(0,N)
+obj.values.lbfgs <- rep(0,N)
+fails <- 0
+
+for (j in 1:N){
+  print(j)
+  start <- c(round(runif(1, .1, .9), 2), round(runif(1, 1, 50), 2), round(runif(1, 1, 50)))
+  start.time <- Sys.time()
+  fp <- LBFGS(par = start, data=data, fixptfn = update, objfn = likelihood, control = list(tol = epsilon, maxiter = 4e3, objfn.inc = 1))
+  end.time <- Sys.time()
+
+  if(fp$convergence){
+    time_rep [j] <- end.time - start.time
+    fpevals[j] <- fp$fpevals
+    objevals[j] <- fp$objfevals
+    obj.values.lbfgs[j] <- fp$value.objfn
+  } else{
+    time_rep [j] <- NA
+    fpevals[j] <- NA
+    objevals[j] <- NA
+    obj.values.lbfgs[j] <- NA
+    fails = fails+1
+  }
+
+}
+time_rep <- time_rep[!is.na(time_rep)]
+fpevals <- fpevals[!is.na(fpevals)]
+objevals <- objevals[!is.na(objevals)]
+obj.values <- obj.values.lbfgs[!is.na(obj.values)]
 
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(fpevals, probs = c(0, .5, 1)))
@@ -232,7 +277,7 @@ epsilon <- 1e-9
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.sq1 <- rep(0,N)
 fails <- 0
 
 for (j in 1:N){
@@ -246,12 +291,12 @@ for (j in 1:N){
     time_rep [j] <- end.time - start.time
     fpevals[j] <- fp$fpevals
     objevals[j] <- fp$objfevals
-    obj.values[j] <- fp$value.objfn
+    obj.values.sq1[j] <- fp$value.objfn
   } else{
     time_rep [j] <- NA
     fpevals[j] <- NA
     objevals[j] <- NA
-    obj.values[j] <- NA
+    obj.values.sq1[j] <- NA
     fails = fails+1
   }
 
@@ -279,7 +324,7 @@ epsilon <- 1e-9
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.sq2 <- rep(0,N)
 fails <- 0
 
 for (j in 1:N){
@@ -293,12 +338,12 @@ for (j in 1:N){
     time_rep [j] <- end.time - start.time
     fpevals[j] <- fp$fpevals
     objevals[j] <- fp$objfevals
-    obj.values[j] <- fp$value.objfn
+    obj.values.sq2[j] <- fp$value.objfn
   } else{
     time_rep [j] <- NA
     fpevals[j] <- NA
     objevals[j] <- NA
-    obj.values[j] <- NA
+    obj.values.sq2[j] <- NA
     fails = fails+1
   }
 
@@ -311,7 +356,7 @@ obj.values <- obj.values[!is.na(obj.values)]
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(fpevals, probs = c(0, .5, 1)))
 print(quantile(objevals, probs = c(0, .5, 1)))
-print(quantile(obj.values, probs = c(0, .5, 1)))
+print(quantile(obj.values.sq2, probs = c(0, .5, 1)))
 print(fails/N)
 
 
@@ -325,7 +370,7 @@ epsilon <- 1e-9
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.sq3 <- rep(0,N)
 fails <- 0
 
 for (j in 1:N){
@@ -339,12 +384,12 @@ for (j in 1:N){
     time_rep [j] <- end.time - start.time
     fpevals[j] <- fp$fpevals
     objevals[j] <- fp$objfevals
-    obj.values[j] <- fp$value.objfn
+    obj.values.sq3[j] <- fp$value.objfn
   } else{
     time_rep [j] <- NA
     fpevals[j] <- NA
     objevals[j] <- NA
-    obj.values[j] <- NA
+    obj.values.sq3[j] <- NA
     fails = fails+1
   }
 
@@ -357,7 +402,7 @@ obj.values <- obj.values[!is.na(obj.values)]
 print(quantile(time_rep, probs = c(0, .5, 1)))
 print(quantile(fpevals, probs = c(0, .5, 1)))
 print(quantile(objevals, probs = c(0, .5, 1)))
-print(quantile(obj.values, probs = c(0, .5, 1)))
+print(quantile(obj.values.sq3, probs = c(0, .5, 1)))
 print(fails/N)
 
 
@@ -371,7 +416,7 @@ epsilon <- 1e-9
 time_rep <- rep(0,N)
 fpevals <- rep(0,N)
 objevals <- rep(0,N)
-obj.values <- rep(0,N)
+obj.values.jj <- rep(0,N)
 fails <- 0
 
 for (j in 1:n){

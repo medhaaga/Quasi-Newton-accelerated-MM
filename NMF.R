@@ -48,11 +48,11 @@ update1 <- function(now, V)
 }
 
 
-dim <- 20
+dim <- 10
 V <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
 A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
 B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-start  <- c(c(A), c(B))
+start.all  <- matrix(rgamma(n= 2*dim*dim*N, shape = 5, scale = 1), nrow = N, ncol = 2*dim*dim)
 tol <- 0.01
 
 ###############################################
@@ -60,17 +60,15 @@ tol <- 0.01
 ###############################################
 
 N <- 10
-time_rep <- rep(0,N)
-fpevals <- rep(0,N)
+time_rep.mm <- rep(0,N)
+fpevals.mm <- rep(0,N)
 obj.values.mm <- rep(0, N)
 
 
 for (j in 1:N)
 {
   print(j)
-  A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  start  <- c(c(A), c(B))
+  start  <- start.all[j,]
 
   now <- start
   new <- start
@@ -81,7 +79,7 @@ for (j in 1:N)
   start.time <- Sys.time()
   while(diff > tol)
   {
-    if (iter %% 100 == 0) print(diff)
+    if (iter %% 1000 == 0) print(diff)
     new <- update1(now, V)
     diff <- norm(new-now, type = "2")
     now <- new
@@ -89,13 +87,13 @@ for (j in 1:N)
   }
   end.time <- Sys.time()
 
-  time_rep [j] <- end.time - start.time
-  fpevals[j] <- iter
+  time_rep.mm [j] <- end.time - start.time
+  fpevals.mm[j] <- iter
   obj.values.mm[j] <- frobenius(new, V)
 }
 
-print(quantile(time_rep, probs = c(0, .5, 1)))
-print(quantile(fpevals, probs = c(0, .5, 1)))
+print(quantile(time_rep.mm, probs = c(0, .5, 1)))
+print(quantile(fpevals.mm, probs = c(0, .5, 1)))
 print(quantile(obj.values.mm, probs = c(0, .5, 1)))
 
 ##################################################
@@ -104,37 +102,35 @@ print(quantile(obj.values.mm, probs = c(0, .5, 1)))
 
 
 N <- 10
-time_rep <- rep(0,N)
-fpevals <- rep(0,N)
-levals <- rep(0, N)
+time_rep.bfgs <- rep(0,N)
+fevals.bfgs <- rep(0,N)
+levals.bfgs <- rep(0, N)
 obj.values.bfgs <- rep(0, N)
 fails <- 0
 
 for (j in 1:N)
 {
   print(j)
-  A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  start  <- c(c(A), c(B))
+  start  <- start.all[j,]
 
   start.time <- Sys.time()
   fp <- BFGS(par = start, V=V, fixptfn = update1, objfn = frobenius, control = list(tol = tol, objfn.inc = 1, maxiter = 5e4))
   end.time <- Sys.time()
 
   if(fp$convergence){
-    time_rep [j] <- end.time - start.time
-    fpevals[j] <- fp$fpevals
+    time_rep.bfgs [j] <- end.time - start.time
+    fevals.bfgs[j] <- fp$fpevals
     obj.values.bfgs[j] <- fp$value.objfn
   } else{
     fails = fails+1
-    time_rep [j] <- NA
-    fpevals[j] <- NA
+    time_rep.bfgs [j] <- NA
+    fevals.bfgs[j] <- NA
     obj.values.bfgs[j] <- NA
   }
 }
 
-print(quantile(time_rep, probs = c(0, .5, 1)))
-print(quantile(fpevals, probs = c(0, .5, 1)))
+print(quantile(time_rep.bfgs, probs = c(0, .5, 1)))
+print(quantile(fevals.bfgs, probs = c(0, .5, 1)))
 print(quantile(obj.values.bfgs, probs = c(0, .5, 1)))
 
 
@@ -145,9 +141,9 @@ print(quantile(obj.values.bfgs, probs = c(0, .5, 1)))
 
 
 N <- 10
-time_rep <- rep(0,N)
-fpevals <- rep(0,N)
-levals <- rep(0, N)
+time_rep.lbfgs <- rep(0,N)
+fevals.lbfgs <- rep(0,N)
+levals.lbfgs <- rep(0, N)
 obj.values.lbfgs <- rep(0, N)
 tol = 1e-3
 fails <- 0
@@ -155,9 +151,7 @@ fails <- 0
 for (j in 1:N)
 {
   print(j)
-  A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  start  <- c(c(A), c(B))
+  start  <- start.all[j,]
 
 
   start.time <- Sys.time()
@@ -165,21 +159,21 @@ for (j in 1:N)
   end.time <- Sys.time()
 
   if(fp$convergence){
-    time_rep [j] <- end.time - start.time
-    fpevals[j] <- fp$fpevals
-    levals[j] <- fp$objfevals
+    time_rep.lbfgs [j] <- end.time - start.time
+    fevals.lbfgs[j] <- fp$fpevals
+    levals.lbfgs[j] <- fp$objfevals
     obj.values.lbfgs[j] <- fp$value.objfn
   } else{
     fails = fails+1
-    time_rep [j] <- NA
-    fpevals[j] <- NA
-    levals[j] <- NA
+    time_rep.lbfgs [j] <- NA
+    fevals.lbfgs[j] <- NA
+    levals.lbfgs[j] <- NA
     obj.values.lbfgs[j] <- NA
   }
 }
 
-print(quantile(time_rep, probs = c(0, .5, 1)))
-print(quantile(fpevals, probs = c(0, .5, 1)))
+print(quantile(time_rep.lbfgs, probs = c(0, .5, 1)))
+print(quantile(fevals.lbfgs, probs = c(0, .5, 1)))
 print(quantile(obj.values.lbfgs, probs = c(0, .5, 1)))
 
 ##########################################
@@ -187,9 +181,9 @@ print(quantile(obj.values.lbfgs, probs = c(0, .5, 1)))
 ##########################################
 
 N <- 10
-time_rep <- rep(0,N)
-fevals <- rep(0,N)
-levals <- rep(0, N)
+time_rep.sq1 <- rep(0,N)
+fevals.sq1 <- rep(0,N)
+levals.sq1 <- rep(0, N)
 obj.values.sq1 <- rep(0, N)
 tol = 1e-3
 fails <- 0
@@ -197,9 +191,7 @@ fails <- 0
 
 for (j in 1:N){
   print(j)
-  A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  start  <- c(c(A), c(B))
+  start  <- start.all[j,]
 
   start.time <- Sys.time()
   fp <- squarem(start, V=V, fixptfn = update1, objfn = frobenius, control = list(K=1, tol = tol, method = 1))
@@ -207,19 +199,20 @@ for (j in 1:N){
 
   if(fp$convergence){
     time_rep [j] <- end.time - start.time
-    fevals[j] <- fp$fpevals
-    levals[j] <- fp$objfevals
+    fevals.sq1[j] <- fp$fpevals
+    levals.sq1[j] <- fp$objfevals
     obj.values.sq1[j] <- fp$value.objfn
   } else{
     fails = fails+1
-    time_rep [j] <- NA
-    evals[j] <- NA
+    time_rep.sq1 [j] <- NA
+    fevals.sq1[j] <- NA
+    levals.sq1[j] <- NA
     obj.values.sq1[j] <- NA
   }
 }
-print(quantile(time_rep, probs = c(0, .5, 1)))
-print(quantile(fevals, probs = c(0, .5, 1)))
-print(quantile(levals, probs = c(0, .5, 1)))
+print(quantile(time_rep.sq1, probs = c(0, .5, 1)))
+print(quantile(fevals.sq1, probs = c(0, .5, 1)))
+print(quantile(levals.sq1, probs = c(0, .5, 1)))
 print(quantile(obj.values.sq1, probs = c(0, .5, 1)))
 
 ##########################################
@@ -227,9 +220,9 @@ print(quantile(obj.values.sq1, probs = c(0, .5, 1)))
 ##########################################
 
 N <- 10
-time_rep <- rep(0,N)
-fpevals <- rep(0,N)
-levals <- rep(0, N)
+time_rep.sq2 <- rep(0,N)
+fevals.sq2 <- rep(0,N)
+levals.sq2 <- rep(0, N)
 obj.values.sq2 <- rep(0, N)
 tol = 1e-3
 fails <- 0
@@ -237,9 +230,7 @@ fails <- 0
 
 for (j in 1:N){
   print(j)
-  A <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  B <- matrix(rgamma(n= dim*dim, shape = 5, scale = 1), dim, dim)
-  start  <- c(c(A), c(B))
+  start  <- start.all[j,]
 
   start.time <- Sys.time()
   fp <- squarem(start, V=V, fixptfn = update1, objfn = frobenius, control = list(K=1, tol = tol, method = 2))
