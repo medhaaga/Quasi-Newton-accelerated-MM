@@ -112,16 +112,16 @@ f <- function(pi, alpha, batch, freq1, freq2, freq3, freq4){
 
 
 batch <- 4
-freq1 <- 15
-freq2 <- 5
+freq1 <- 10
+freq2 <- 9
 freq3 <- 2
-freq4 <- 2
+freq4 <- 7
 freq <- freq1 + freq2 + freq3 + freq4
-start <- c(.7, 2)
+start <- c(.5, 1)
 tol <- 1e-7
 
 x <- seq(0.000001, 0.6, .01)
-y <- seq(0, 1.5, 0.01)
+y <- seq(0, 2, 0.01)
 z <- outer(X=x, Y=y, f, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
 
 
@@ -147,7 +147,7 @@ while((diff > tol))
 }
 end.time <- Sys.time()
 pdf(file = "Out/beta-contour_MM.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(chain[1:iter,1],chain[1:iter,2])}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(chain[1:iter,1],chain[1:iter,2], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(1,(iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(iter)
 print(new)
@@ -162,11 +162,12 @@ print(log.likelihood(new, batch, freq1, freq2, freq3, freq4))
 
 start.time <- Sys.time()
 fp <- BFGS(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
-           freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, control = list(tol = tol, objfn.inc = 1, maxiter = 5e4, intermed = TRUE))
+           freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4,
+           control = list(tol = tol, qn=1, step.max=2, objfn.inc = 1, maxiter = 1e4, intermed = TRUE, trace=TRUE))
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_BFGS.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2])}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(end.time-start.time)
 print(fp$convergence)
@@ -181,7 +182,8 @@ print(fp$value.objfn)
 
 start.time <- Sys.time()
 fp <- LBFGS(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
-           freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, control = list(tol = tol, objfn.inc = 1, maxiter = 5e4, intermed = TRUE))
+           freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4,
+           control = list(m=10, tol = tol, objfn.inc = 1, maxiter = 5e3, intermed = TRUE, trace=TRUE))
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_LBFGS.pdf", height = 5, width = 7)
@@ -252,4 +254,20 @@ print(fp$fpevals)
 print(fp$objfevals)
 print(fp$value.objfn)
 
+######################################
+### ZAL
+########################################
+
+start.time <- Sys.time()
+fp <- qnamm(x=start, fx_mm=update, qn=2, fx_obj=log.likelihood, max_iter=5e4, tol=tol, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
+end.time <- Sys.time()
+
+pdf(file = "Out/beta-contour_SqS3.pdf", height = 5, width = 7)
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$Xhist[1,],fp$Xhist[2,])}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
+print(end.time-start.time)
+print(fp$convergence)
+print(fp$fevals)
+print(fp$levals)
+print(fp$objective)
+
