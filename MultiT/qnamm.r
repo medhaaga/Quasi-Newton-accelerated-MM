@@ -22,6 +22,7 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, n=n, dim=dim, da
   U <- matrix(0,P,qn)
   W <- matrix(0,P,qn)
   objval <- Inf
+  obj_iter <- c()
   objective <- double(max_iter)
   Xhist <- matrix(NA,P,qn+max_iter)
   #
@@ -29,6 +30,8 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, n=n, dim=dim, da
   #
   for (i in 1:qn) {
     Xhist[,i] <- x
+    objval <- fx_obj(x, n=n, dim=dim, data=data)
+    obj_iter <- c(obj_iter, objval)
     x_old <- x
     x <- fx_mm(x, n=n, dim=dim, data=data)
     U[,i] <- x - x_old
@@ -38,6 +41,7 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, n=n, dim=dim, da
     W[,1:(qn-1)] <- U[,2:qn]
   x_old <- x
   x <- fx_mm(x, n=n, dim=dim, data=data)
+  objval <- fx_obj(x, n=n, dim=dim, data=data)
   W[,qn] <- x - x_old
 
   fevals <- qn+1
@@ -52,6 +56,7 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, n=n, dim=dim, da
 
     Xhist[,qn+i] <- x
     objval_old <- objval
+    obj_iter <- c(obj_iter, objval)
     x_old <- x
     x <- fx_mm(x, n=n, dim=dim, data=data)
 
@@ -99,5 +104,5 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, n=n, dim=dim, da
   if (i == max_iter) conv = FALSE
   print(paste("Accepted:", nacc))
   print(paste("Rejected:", nrej))
-  return(list(convergence = conv, x=x, fevals = fevals, levals = levals,  accept = nacc, reject = nrej, objective=objective[i], Xhist=Xhist[,1:(i+qn),drop=FALSE]))
+  return(list(convergence = conv, x=x, fevals = fevals, levals = levals,  accept = nacc, reject = nrej, objective=objective[i], Xhist=Xhist[,1:(i+qn),drop=FALSE], obj_iter = obj_iter))
 }

@@ -97,6 +97,8 @@ for (i in 1:N){
   print(i)
   now <- start_rep[i,]
   new <- start_rep[i,]
+  objval <- likelihood(now, n=n, dim=dim, data=data)
+  chain_mm <- objval
   diff <- 100
   iter <- 0
   start.time <- Sys.time()
@@ -106,6 +108,8 @@ for (i in 1:N){
     iter <- iter + 1
     if(iter %% 1000 == 0) print(iter)
     new <- update(now, n=n, dim=dim, data=data)
+    objval <- likelihood(new, n=n, dim=dim, data=data)
+    chain_mm <- c(chain_mm, objval)
     chain[iter,] <- new
     diff <- sqrt(crossprod(new-now))
     now <- new
@@ -175,6 +179,7 @@ for (i in 1:N){
   time_zal[i] <- end.time - start.time
   obj_zal[i] <- fp$objective
   eval_zal[i] <- fp$fevals
+  chain_zal <- fp$obj_iter
 }
 
 fails <- sum(is.na(obj_zal))
@@ -186,34 +191,54 @@ print(quantile(eval_zal, probs = c(0, .5, 1)))
 print(quantile(obj_zal, probs = c(0, .5, 1)))
 
 ########################################
-## Classical BFGS
+## Classical BFGS1
 ########################################
 
-time_bfgs <- rep(0, N)
-obj_bfgs <- rep(0, N)
-eval_bfgs <- rep(0, N)
+time_bfgs1 <- rep(0, N)
+obj_bfgs1 <- rep(0, N)
+eval_bfgs1 <- rep(0, N)
 
 for (i in 1:N){
   start <- start_rep[i,]
   start.time <- Sys.time()
   fp <- BFGS(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data,
-             control = list(qn=2, tol = tol, objfn.inc = 1, step.max = 1e6, maxiter = 5e4, intermed = TRUE))
+             control = list(qn=1, tol = tol, objfn.inc = 10, step.max = 1e7, maxiter = 5e4, intermed = TRUE))
   end.time <- Sys.time()
 
-  time_bfgs[i] <- end.time - start.time
-  obj_bfgs[i] <- fp$value.objfn
-  eval_bfgs[i] <- fp$fpevals
-
-  chain <- fp$p.inter
-  plot(chain[,159], chain[,160], xlim = range(chain[,159], ylim = range(chain[,160])))
-  points(chain[1,159], chain[1,160], col = "green", pch=19, cex=2)
-  points(chain[dim(fp$p.inter)[1],159], chain[dim(fp$p.inter)[1],160], col = "red", pch=19, cex=2)
-
+  time_bfgs1[i] <- end.time - start.time
+  obj_bfgs1[i] <- fp$value.objfn
+  eval_bfgs1[i] <- fp$fpevals
+  chain_bfgs1 <- fp$p.inter[,(P+1)]
 }
 
-print(quantile(time_bfgs, probs = c(0, .5, 1)))
-print(quantile(eval_bfgs, probs = c(0, .5, 1)))
-print(quantile(obj_bfgs, probs = c(0, .5, 1)))
+print(quantile(time_bfgs1, probs = c(0, .5, 1)))
+print(quantile(eval_bfgs1, probs = c(0, .5, 1)))
+print(quantile(obj_bfgs1, probs = c(0, .5, 1)))
+
+########################################
+## Classical bfgs2
+########################################
+
+time_bfgs2 <- rep(0, N)
+obj_bfgs2 <- rep(0, N)
+eval_bfgs2 <- rep(0, N)
+
+for (i in 1:N){
+  start <- start_rep[i,]
+  start.time <- Sys.time()
+  fp <- BFGS(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data,
+             control = list(qn=2, tol = tol, objfn.inc = 1, step.max = 1e7, maxiter = 5e4, intermed = TRUE))
+  end.time <- Sys.time()
+  
+  time_bfgs2[i] <- end.time - start.time
+  obj_bfgs2[i] <- fp$value.objfn
+  eval_bfgs2[i] <- fp$fpevals
+  chain_bfgs2 <- fp$p.inter[,(P+1)]
+}
+
+print(quantile(time_bfgs2, probs = c(0, .5, 1)))
+print(quantile(eval_bfgs2, probs = c(0, .5, 1)))
+print(quantile(obj_bfgs2, probs = c(0, .5, 1)))
 
 ########################################
 ## L-BFGS
@@ -227,11 +252,12 @@ for (i in 1:N){
   start <- start_rep[i,]
   start.time <- Sys.time()
   fp <- LBFGS(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data,
-              control = list(m=10, tol = tol, obj.tol=1e-9, objfn.inc = 1e-5, maxiter = 5e4, intermed = TRUE))
+              control = list(m=10, tol = tol, objfn.inc = 10, maxiter = 5e4, intermed = TRUE))
   end.time <- Sys.time()
   time_lbfgs[i] <- end.time - start.time
   obj_lbfgs[i] <- fp$value.objfn
   eval_lbfgs[i] <- fp$fpevals
+  chain_lbfgs <- fp$p.inter[,(P+1)]
   }
 print(quantile(time_lbfgs, probs = c(0, .5, 1)))
 print(quantile(eval_lbfgs, probs = c(0, .5, 1)))
@@ -256,6 +282,7 @@ for (i in 1:N){
   time_sq1[i] <- end.time - start.time
   obj_sq1[i] <- fp$value.objfn
   eval_sq1[i] <- fp$fpevals
+  chain_sq1 <- fp$p.inter[,(P+1)]
 }
 
 print(quantile(time_sq1, probs = c(0, .5, 1)))
@@ -280,6 +307,7 @@ for (i in 1:N){
   time_sq2[i] <- end.time - start.time
   obj_sq2[i] <- fp$value.objfn
   eval_sq2[i] <- fp$fpevals
+  chain_sq2 <- fp$p.inter[,(P+1)]
 }
 print(quantile(time_sq2, probs = c(0, .5, 1)))
 print(quantile(eval_sq2, probs = c(0, .5, 1)))
@@ -303,6 +331,7 @@ for (i in 1:N){
   time_sq3[i] <- end.time - start.time
   obj_sq3[i] <- fp$value.objfn
   eval_sq3[i] <- fp$fpevals
+  chain_sq3 <- fp$p.inter[,(P+1)]
 }
 
 print(quantile(time_sq3, probs = c(0, .5, 1)))
@@ -390,39 +419,18 @@ print(quantile(evals, probs = c(0, .5, 1)))
 print(quantile(obj.values, probs = c(0, .5, 1)))
 
 
-save(time_mm, time_bfgs, time_lbfgs, time_sq1, time_sq2, time_sq3, time_zal,
-     eval_mm, eval_bfgs, eval_lbfgs, eval_sq1, eval_sq2, eval_sq3, eval_zal,
-     obj_mm, obj_bfgs, obj_lbfgs, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/objects.Rdata")
+save(time_mm, time_bfgs1, time_bfgs2, time_lbfgs, time_sq1, time_sq2, time_sq3, time_zal,
+     eval_mm, eval_bfgs1, eval_bfgs2, eval_lbfgs, eval_sq1, eval_sq2, eval_sq3, eval_zal,
+     obj_mm, obj_bfgs1, obj_bfgs2, obj_lbfgs, obj_sq1, obj_sq2, obj_sq3, obj_zal,
+     chain_mm, chain_bfgs1, chain_bfgs2, chain_lbfgs, chain_sq1, chain_sq2, chain_sq3, chain_zal, file = "Out/multiT-objects.Rdata")
 
-time_range <- range(time_mm, time_bfgs, time_lbfgs, time_sq1, time_sq2, time_sq3, time_zal)
-eval_range <- range(eval_mm, eval_bfgs, eval_lbfgs, eval_sq1, eval_sq2, eval_sq3, eval_zal)
-obj_range <- range(obj_mm, obj_bfgs, obj_lbfgs, obj_sq1, obj_sq2, obj_sq3, obj_zal)
 
-pdf(file = "Out/multiT-objVSeval.pdf")
-plot(eval_mm, obj_mm, col = "red", xlim=c(min(eval_range), (max(eval_range)+200)), ylim = obj_range, pch=19, cex=1.5, xlab="Evaluations", ylab="Objective")
-points(eval_bfgs, obj_bfgs, col="purple", pch=19, cex=1.5)
-points(eval_lbfgs, obj_lbfgs, col="pink", pch=19, cex=1.5)
-points(eval_sq1, obj_sq1, col="lightblue", pch=19, cex=1.5)
-points(eval_sq2, obj_sq2, col=6, pch=19, cex=1.5)
-points(eval_sq3, obj_sq3, col=7, pch=19, cex=1.5)
-points(eval_zal, obj_zal, col="steelblue1", pch=19, cex=1.5)
-legend("bottomright", legend = c("MM", "BFGS", "L-BFGS", "SqS1", "SqS2", "SqS3", "ZAL"),
-       col =c("red", "purple", "pink", "lightblue", 6, 7, "steelblue1"), pch=19, cex=1.5)
-dev.off()
-
-pdf(file = "Out/multiT-objVStime.pdf")
-plot(time_mm, obj_mm, col = "red", xlim=c(min(time_range), (max(time_range)+5)), ylim = obj_range, pch=19, cex=1.5, xlab="Time", ylab="Objective")
-points(time_bfgs, obj_bfgs, col="purple", pch=19, cex=1.5)
-points(time_lbfgs, obj_lbfgs, col="pink", pch=19, cex=1.5)
-points(time_sq1, obj_sq1, col="lightblue", pch=19, cex=1.5)
-points(time_sq2, obj_sq2, col=6, pch=19, cex=1.5)
-points(time_sq3, obj_sq3, col=7, pch=19, cex=1.5)
-points(time_zal, obj_zal, col="steelblue1", pch=19, cex=1.5)
-legend("bottomright", legend = c("MM", "BFGS", "L-BFGS", "SqS1", "SqS2", "SqS3", "ZAL"),
-       col =c("red", "purple", "pink", "lightblue", 6, 7, "steelblue1"), pch=19, cex=1.5)
-dev.off()
-
-pdf(file = "Out/multiT-boxplot_eval.pdf")
-df2 <- data.frame("MM"=eval_mm[-10], "BFGS"=eval_bfgs[-10], "L-BFGS"=eval_lbfgs[-10], "SqS1"=eval_sq1[-10], "SqS2"=eval_sq2[-10],"SqS3"=eval_sq3[-10], "ZAL"=eval_zal)
-boxplot(df2, xlab="Ã„lgorithm", ylab = "Number of F evaluations")
+pdf(file = "Out/multiT-running.pdf")
+plot(5:50, chain_bfgs1[5:50], type = 'l', col = "lightskyblue", lwd=2, 
+     xlab = "Ïterations", ylab = "Negative likelihood")
+lines(5:50, chain_bfgs2[5:50], col = "red", lty=2, lwd=2)
+lines(5:50, chain_lbfgs[5:50], col = "dodgerblue4", lty=3, lwd=2)
+lines(5:50, chain_zal[5:50], col = "green", lty=4, lwd=2)
+lines(5:50, chain_sq1[5:50], col = "pink", lty=5, lwd=2)
+legend("topright", legend = c("BFGS1", "BFGS2", "LBFGS", "ZAL", "SQ1"), lty = 1:5, col = c("lightskyblue", "red", "dodgerblue4", "green", "pink"), lwd=2)
 dev.off()
