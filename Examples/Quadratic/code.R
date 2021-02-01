@@ -1,0 +1,295 @@
+set.seed(1)
+library(pracma)
+library(SQUAREM)
+library(quasiNewtonMM)
+source("qnamm.r")
+library(RColorBrewer)
+
+objective <- function(x, A, b, L)
+{
+  obj <- 0.5*crossprod(x, (A %*% x)) + crossprod(b, x)
+  return (obj)
+}
+
+update <- function(now, A, b, L)
+{
+  new <- now - ((A %*% now) + b)/L
+  return (new)
+}
+
+#######################################
+
+set.seed(10)
+dim <- 100
+u <- matrix(rnorm(dim*dim, mean = 0, sd = 10), dim, dim)
+A <- t(u) %*% u
+L <- 1.001*max(abs(eigen(A)$values))
+b <- as.matrix(rnorm(dim, mean = 0, sd = 10))
+truth <- - solve(A) %*% b
+true.obj <- objective(truth, A, b, L)
+N <- 1
+start.all <- matrix(rnorm(dim*N, mean = 0, sd = 1e3), nrow = N, ncol = dim)
+tol = 1e-3
+
+
+############################################
+
+###############################################
+#### MM Algorithm
+###############################################
+
+time_mm <- rep(0,N)
+eval_mm <- rep(0,N)
+obj_mm <- rep(0, N)
+
+for (j in 1:N)
+{
+  print(j)
+
+  start <- truth + as.matrix(start.all[j,])
+  now <- start
+  new <- start
+  iter <- 1
+  diff <- 100
+
+
+  start.time <- Sys.time()
+  while(diff > tol)
+  {
+    new <- update(now, A, b, L)
+    diff <- norm(new-now, type = "2")
+    now <- new
+    iter <- iter +1
+  }
+  end.time <- Sys.time()
+
+  time_mm [j] <- end.time - start.time
+  eval_mm[j] <- iter
+  obj_mm[j] <- objective(new, A, b, L)
+  
+}
+
+print(quantile(time_mm, probs = c(.1, .5, .9)))
+print(quantile(eval_mm, probs = c(.1, .5, .9)))
+print(quantile(obj_mm, probs = c(.1, .5, .9)))
+
+##################################################
+#### BQN, q=1
+##################################################
+
+time_bqn1 <- rep(0, N)
+obj_bqn1 <- rep(0, N)
+eval_bqn1 <- rep(0, N)
+
+for (i in 1:N)
+{
+  start <- truth + as.matrix(start.all[i,])
+
+  start.time <- Sys.time()
+  fp <- BQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
+             control = list(qn=1, tol=tol, objfn.inc=10, step.max=10000000, step.min=1, maxiter=5e4))
+  end.time <- Sys.time()
+
+  time_bqn1[i] <- end.time - start.time
+  obj_bqn1[i] <- fp$value.objfn
+  eval_bqn1[i] <- fp$fpevals
+}
+
+
+print(quantile(time_bqn1, probs = c(.1, .5, .9)))
+print(quantile(eval_bqn1, probs = c(.1, .5, .9)))
+print(quantile(obj_bqn1, probs = c(.1, .5, .9)))
+
+##################################################
+#### bqn, q=2
+##################################################
+
+time_bqn2 <- rep(0, N)
+obj_bqn2 <- rep(0, N)
+eval_bqn2 <- rep(0, N)
+
+for (i in 1:N)
+{
+  print(i)
+  start <- truth + as.matrix(start.all[i,])
+  
+  start.time <- Sys.time()
+  fp <- BQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
+             control = list(qn=2, tol=tol, objfn.inc=1, step.max=100000, step.min=1, maxiter=5e4))
+  end.time <- Sys.time()
+  
+  time_bqn2[i] <- end.time - start.time
+  obj_bqn2[i] <- fp$value.objfn
+  eval_bqn2[i] <- fp$fpevals
+  }
+
+
+print(quantile(time_bqn2, probs = c(.1, .5, .9)))
+print(quantile(eval_bqn2, probs = c(.1, .5, .9)))
+print(quantile(obj_bqn2, probs = c(.1, .5, .9)))
+
+#####################################################
+#### L-BQN
+#####################################################
+
+
+time_lbqn <- rep(0, N)
+obj_lbqn <- rep(0, N)
+eval_lbqn <- rep(0, N)
+
+
+for (i in 1:N)
+{
+  print(i)
+  start <- truth + as.matrix(start.all[i,])
+
+  start.time <- Sys.time()
+  fp <- LBQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
+              control = list(tol = tol, objfn.inc = 1, maxiter = 5e4))
+  end.time <- Sys.time()
+
+
+  time_lbqn[i] <- end.time - start.time
+  obj_lbqn[i] <- fp$value.objfn
+  eval_lbqn[i] <- fp$fpevals
+}
+
+print(quantile(time_lbqn, probs = c(.1, .5, .9)))
+print(quantile(eval_lbqn, probs = c(.1, .5, .9)))
+print(quantile(obj_lbqn, probs = c(.1, .5, .9)))
+
+##########################################
+#### SQUAREM - 1
+##########################################
+
+eval_sq1 <- rep(0, N)
+time_sq1 <- rep(0, N)
+obj_sq1 <- rep(0, N)
+
+for (i in 1:N){
+  print(i)
+  start <- truth + as.matrix(start.all[i,])
+
+  start.time <- Sys.time()
+  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 1, maxiter = 5e4, intermed = TRUE))
+  end.time <- Sys.time()
+
+
+  time_sq1[i] <- end.time - start.time
+  obj_sq1[i] <- fp$value.objfn
+  eval_sq1[i] <- fp$fpevals
+}
+
+
+print(quantile(time_sq1, probs = c(.1, .5, .9)))
+print(quantile(eval_sq1, probs = c(.1, .5, .9)))
+print(quantile(obj_sq1, probs = c(.1, .5, .9)))
+
+##########################################
+#### SQUAREM - 2
+##########################################
+
+eval_sq2 <- rep(0, N)
+time_sq2 <- rep(0, N)
+obj_sq2 <- rep(0, N)
+
+for (i in 1:N){
+  print(i)
+  start <- truth + as.matrix(start.all[i,])
+
+  start.time <- Sys.time()
+  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 2, maxiter = 5e4, intermed = TRUE))
+  end.time <- Sys.time()
+
+
+  time_sq2[i] <- end.time - start.time
+  obj_sq2[i] <- fp$value.objfn
+  eval_sq2[i] <- fp$fpevals
+}
+
+
+print(quantile(time_sq2, probs = c(.1, .5, .9)))
+print(quantile(eval_sq2, probs = c(.1, .5, .9)))
+print(quantile(obj_sq2, probs = c(.1, .5, .9)))
+
+##########################################
+#### SQUAREM - 3
+##########################################
+
+eval_sq3 <- rep(0, N)
+time_sq3 <- rep(0, N)
+obj_sq3 <- rep(0, N)
+
+for (i in 1:N){
+  print(i)
+  start <- truth + as.matrix(start.all[i,])
+
+  start.time <- Sys.time()
+  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective,
+                control = list(K=1, tol = tol, method = 3, maxiter = 5e4, intermed = TRUE))
+  end.time <- Sys.time()
+
+
+  time_sq3[i] <- end.time - start.time
+  obj_sq3[i] <- fp$value.objfn
+  eval_sq3[i] <- fp$fpevals
+}
+
+print(quantile(time_sq3, probs = c(.1, .5, .9)))
+print(quantile(eval_sq3, probs = c(.1, .5, .9)))
+print(quantile(obj_sq3, probs = c(.1, .5, .9)))
+
+#################################################
+##### ZAL; q=2
+#################################################
+
+time_zal <- rep(NA, N)
+obj_zal <- rep(NA, N)
+eval_zal <- rep(NA, N)
+
+for (i in 1:N){
+  start <- truth + as.matrix(start.all[i,])
+  
+  start.time <- Sys.time()
+  fp <- qnamm(x = start, fx_mm = update, fx_obj = objective, qn=2, A=A, b=b, L=L, max_iter = 1e5, tol=tol)
+  end.time <- Sys.time()
+
+  time_zal[i] <- end.time - start.time
+  obj_zal[i] <- fp$objective
+  eval_zal[i] <- fp$fevals
+}
+
+print(quantile(time_zal, probs = c(.1, .5, .9)))
+print(quantile(eval_zal, probs = c(.1, .5, .9)))
+print(quantile(obj_zal, probs = c(.1, .5, .9)))
+
+
+####################################
+#### Boxplots and scatterplots
+#####################################
+
+save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal,
+     eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal,
+     obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/quad-objects_sq1e3.Rdata")
+
+load(file = "Out/quad-objects_sq1e3.Rdata")
+
+time_range <- range(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal)
+eval_range <- range(eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal)
+obj_range <- range(obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal)
+
+df1 <- data.frame("B1" = obj_bqn1, "B2" = obj_bqn2, "L-B" = obj_lbqn, 
+                  "Sq1" = obj_sq1, "Sq2" = obj_sq2, "Sq3" = obj_sq3, "ZAL" = obj_zal)
+
+df2 <- data.frame( "B1" = eval_bqn1, "B2" = eval_bqn2, "L-B" = eval_lbqn, 
+                  "Sq1" = eval_sq1, "Sq2" = eval_sq2, "Sq3" = eval_sq3, "ZAL" = eval_zal)
+
+df3 <- data.frame("B1" = time_bqn1, "B2" = time_bqn2, "L-B" = time_lbqn, 
+                  "Sq1" = time_sq1, "Sq2" = time_sq2, "Sq3" = time_sq3, "ZAL" = time_zal)
+
+
+pdf(file = "Out/quad-boxplot_sd1e3.pdf", width = 12, height = 5)
+par(mfrow = c(1,2))
+boxplot(df2, xlab = "Algorithm", ylab = "No. of evaluations")
+boxplot(df3, xlab = "Algorithm", ylab = "Time")
+dev.off()
