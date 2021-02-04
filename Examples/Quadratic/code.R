@@ -23,13 +23,13 @@ set.seed(10)
 dim <- 100
 u <- matrix(rnorm(dim*dim, mean = 0, sd = 10), dim, dim)
 A <- t(u) %*% u
-L <- 1.001*max(abs(eigen(A)$values))
+L <- 1.001*norm(max(abs(eigen(A)$values)), type = "2")
 b <- as.matrix(rnorm(dim, mean = 0, sd = 10))
 truth <- - solve(A) %*% b
 true.obj <- objective(truth, A, b, L)
-N <- 1
-start.all <- matrix(rnorm(dim*N, mean = 0, sd = 1e3), nrow = N, ncol = dim)
-tol = 1e-3
+N <- 10
+start.all <- matrix(rnorm(dim*N, mean = 0, sd = 1000), nrow = N, ncol = dim)
+tol = 1e-4
 
 
 ############################################
@@ -87,7 +87,7 @@ for (i in 1:N)
 
   start.time <- Sys.time()
   fp <- BQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
-             control = list(qn=1, tol=tol, objfn.inc=10, step.max=10000000, step.min=1, maxiter=5e4))
+             control = list(qn=1, tol=tol, objfn.inc=10, step.max=10000000, step.min=1, maxiter=1e5))
   end.time <- Sys.time()
 
   time_bqn1[i] <- end.time - start.time
@@ -115,14 +115,13 @@ for (i in 1:N)
   
   start.time <- Sys.time()
   fp <- BQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
-             control = list(qn=2, tol=tol, objfn.inc=1, step.max=100000, step.min=1, maxiter=5e4))
+             control = list(qn=2, tol=tol, objfn.inc=1, step.max=100000, step.min=1, maxiter=1e5))
   end.time <- Sys.time()
   
   time_bqn2[i] <- end.time - start.time
   obj_bqn2[i] <- fp$value.objfn
   eval_bqn2[i] <- fp$fpevals
   }
-
 
 print(quantile(time_bqn2, probs = c(.1, .5, .9)))
 print(quantile(eval_bqn2, probs = c(.1, .5, .9)))
@@ -145,7 +144,7 @@ for (i in 1:N)
 
   start.time <- Sys.time()
   fp <- LBQN(par = start, A=A, b=b, L=L, fixptfn = update, objfn = objective, 
-              control = list(tol = tol, objfn.inc = 1, maxiter = 5e4))
+              control = list(tol = tol, objfn.inc = 1, maxiter = 1e5))
   end.time <- Sys.time()
 
 
@@ -171,7 +170,7 @@ for (i in 1:N){
   start <- truth + as.matrix(start.all[i,])
 
   start.time <- Sys.time()
-  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 1, maxiter = 5e4, intermed = TRUE))
+  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 1, maxiter = 1e5, intermed = TRUE))
   end.time <- Sys.time()
 
 
@@ -198,11 +197,13 @@ for (i in 1:N){
   start <- truth + as.matrix(start.all[i,])
 
   start.time <- Sys.time()
-  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 2, maxiter = 5e4, intermed = TRUE))
+  fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective, control = list(K=1, tol = tol, method = 2, maxiter = 1e5, intermed = TRUE))
   end.time <- Sys.time()
 
-
-  time_sq2[i] <- end.time - start.time
+  if (end.time - start.time <10) 
+    time_sq2[i] <- 60*(end.time - start.time)
+  else
+    time_sq2[i] <- end.time - start.time
   obj_sq2[i] <- fp$value.objfn
   eval_sq2[i] <- fp$fpevals
 }
@@ -226,7 +227,7 @@ for (i in 1:N){
 
   start.time <- Sys.time()
   fp <- squarem(start, A=A, b=b, L=L, fixptfn = update, objfn = objective,
-                control = list(K=1, tol = tol, method = 3, maxiter = 5e4, intermed = TRUE))
+                control = list(K=1, tol = tol, method = 3, maxiter = 1e5, intermed = TRUE))
   end.time <- Sys.time()
 
 
@@ -251,7 +252,7 @@ for (i in 1:N){
   start <- truth + as.matrix(start.all[i,])
   
   start.time <- Sys.time()
-  fp <- qnamm(x = start, fx_mm = update, fx_obj = objective, qn=2, A=A, b=b, L=L, max_iter = 1e5, tol=tol)
+  fp <- qnamm(x = start, fx_mm = update, fx_obj = objective, qn=2, A=A, b=b, L=L, max_iter = 1e6, tol=tol)
   end.time <- Sys.time()
 
   time_zal[i] <- end.time - start.time
@@ -270,9 +271,9 @@ print(quantile(obj_zal, probs = c(.1, .5, .9)))
 
 save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal,
      eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal,
-     obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/quad-objects_sq1e3.Rdata")
+     obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/quad-objects_sq1e2.Rdata")
 
-load(file = "Out/quad-objects_sq1e3.Rdata")
+load(file = "Out/quad-objects_sq1e2.Rdata")
 
 time_range <- range(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal)
 eval_range <- range(eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal)
@@ -282,14 +283,14 @@ df1 <- data.frame("B1" = obj_bqn1, "B2" = obj_bqn2, "L-B" = obj_lbqn,
                   "Sq1" = obj_sq1, "Sq2" = obj_sq2, "Sq3" = obj_sq3, "ZAL" = obj_zal)
 
 df2 <- data.frame( "B1" = eval_bqn1, "B2" = eval_bqn2, "L-B" = eval_lbqn, 
-                  "Sq1" = eval_sq1, "Sq2" = eval_sq2, "Sq3" = eval_sq3, "ZAL" = eval_zal)
+                  "Sq1" = eval_sq1, "Sq3" = eval_sq3, "ZAL" = eval_zal)
 
 df3 <- data.frame("B1" = time_bqn1, "B2" = time_bqn2, "L-B" = time_lbqn, 
-                  "Sq1" = time_sq1, "Sq2" = time_sq2, "Sq3" = time_sq3, "ZAL" = time_zal)
+                  "Sq1" = time_sq1, "Sq3" = time_sq3, "ZAL" = time_zal)
 
 
-pdf(file = "Out/quad-boxplot_sd1e3.pdf", width = 12, height = 5)
+pdf(file = "Out/quad-boxplot_sd1e2.pdf", width = 12, height = 5)
 par(mfrow = c(1,2))
-boxplot(df2, xlab = "Algorithm", ylab = "No. of evaluations")
-boxplot(df3, xlab = "Algorithm", ylab = "Time")
+boxplot(df2, xlab = "Acceleration Method", ylab = "No. of evaluations")
+boxplot(df3, xlab = "Acceleration Method", ylab = "Time")
 dev.off()

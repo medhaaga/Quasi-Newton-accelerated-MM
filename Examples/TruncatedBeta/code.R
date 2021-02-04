@@ -148,7 +148,7 @@ while((diff > tol))
 end.time <- Sys.time()
 pdf(file = "Out/beta-contour_MM.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
-  points(chain[1:iter,1],chain[1:iter,2], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(1.5,(iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+  points(chain[1:iter,1],chain[1:iter,2], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(2,(iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
 print(paste("Fevals: ", iter, "theta: ", new, "Time: ", end.time-start.time, 
@@ -166,7 +166,7 @@ fp <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_BQN1.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1.5,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
@@ -183,7 +183,7 @@ fp <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_BQN2.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1.5,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
             "Negative log likelihood: ", fp$value.objfn))
@@ -199,8 +199,8 @@ fp <- LBQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
            control = list(m=10, tol = tol, objfn.inc = .001, maxiter = 1e4, intermed = TRUE))
 end.time <- Sys.time()
 
-pdf(file = "Out/beta-contour_LBFGS.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+pdf(file = "Out/beta-contour_LBQN.pdf", height = 5, width = 7)
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
@@ -218,7 +218,7 @@ end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS1.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
-  points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1.5,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+  points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
             "Negative log likelihood: ", fp$value.objfn))
@@ -234,7 +234,7 @@ fp <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS2.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1.5,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
             "Negative log likelihood: ", fp$value.objfn))
@@ -250,7 +250,7 @@ fp <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
 end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS3.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(1,(fp$iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
             "Negative log likelihood: ", fp$value.objfn))
@@ -266,7 +266,7 @@ end.time <- Sys.time()
 
 iter <- dim(fp$Xhist)[2]
 pdf(file = "Out/beta-contour_ZAL1.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$Xhist[1,],fp$Xhist[2,], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(1.5,(iter-1)), 2))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$Xhist[1,],fp$Xhist[2,], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(2,(iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
 print(paste("Fevals: ", fp$fevals, "Ierations: ", fp$accept + fp$reject, "Time: ", end.time-start.time, 

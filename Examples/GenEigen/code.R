@@ -1,8 +1,7 @@
 library(pracma)
 library(SQUAREM)
-library(BfgsQN)
+library(quasiNewtonMM)
 source("qnamm.r")
-library(ggfortify)
 
 rayleigh <- function(x, A, B, dir){
   x <- as.matrix(x)
@@ -74,15 +73,14 @@ D <- matrix(runif(dim^2, min = -5, max = 5), nrow = dim, ncol = dim)
 A <- C + t(C)
 B <- D %*% t(D)
 
-N <- 10
+N <- 1
 start_rep <- matrix(rnorm(N*dim, mean = 1, sd = 10), nrow = N, ncol = dim)
 dir <- "descent"
 tol <- 1e-7
 
 
-
 ###########################################
-## Naive Algorithm
+## Unaccelerated MM Algorithm
 ###########################################
 
 time_mm <- rep(0, N)
@@ -90,19 +88,17 @@ obj_mm <- rep(0, N)
 eval_mm <- rep(0, N)
 
 for (i in 1:N){
+  print(i)
   now <- start_rep[i,]
   new <- start_rep[i,]
   diff <- 100
 
   iter <- 0
   start.time <- Sys.time()
-  chain <- matrix(0, nrow = 1e6, ncol = dim)
   while((diff > tol))
   {
     iter <- iter + 1
-    if(iter %% 1000 == 0) print(iter)
     new <- update(now, A, B, dir = dir)
-    chain[iter,] <- new
     diff <- sqrt(crossprod(new-now))
     now <- new
   }
@@ -110,52 +106,82 @@ for (i in 1:N){
   time_mm[i] <- end.time - start.time
   obj_mm[i] <- rayleigh(new, A, B, dir)
   eval_mm[i] <- iter
-  chain <- chain[1:iter,]
 }
+
+print(quantile(time_mm, probs = c(.1, .5, .9)))
+print(quantile(eval_mm, probs = c(.1, .5, .9)))
+print(quantile(obj_mm, probs = c(.1, .5, .9)))
+
 
 ########################################
 ## BQN, q=1
 ########################################
 
-
-time_bfgs <- rep(0, N)
-obj_bfgs <- rep(0, N)
-eval_bfgs <- rep(0, N)
+time_bqn1 <- rep(0, N)
+obj_bqn1 <- rep(0, N)
+eval_bqn1 <- rep(0, N)
 
 for (i in 1:N){
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- BFGS(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=1, tol = tol, objfn.inc = 1, step.max = 1000, step.min=.1, maxiter = 5e4, intermed = TRUE))
+  fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=1, tol = tol, objfn.inc = 1, step.max = 1000, step.min=.1, maxiter = 5e4))
   end.time <- Sys.time()
 
-  time_bfgs[i] <- end.time - start.time
-  obj_bfgs[i] <- fp$value.objfn
-  eval_bfgs[i] <- fp$fpevals
-
-  chain <- (fp$p.inter)
-  
+  time_bqn1[i] <- end.time - start.time
+  obj_bqn1[i] <- fp$value.objfn
+  eval_bqn1[i] <- fp$fpevals
 }
+
+print(quantile(time_bqn1, probs = c(.1, .5, .9)))
+print(quantile(eval_bqn1, probs = c(.1, .5, .9)))
+print(quantile(obj_bqn1, probs = c(.1, .5, .9)))
+
+########################################
+## BQN, q=2
+########################################
+
+
+time_bqn2 <- rep(0, N)
+obj_bqn2 <- rep(0, N)
+eval_bqn2 <- rep(0, N)
+
+for (i in 1:N){
+  start <- start_rep[i,]
+  start.time <- Sys.time()
+  fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=2, tol = tol, objfn.inc = 1, step.max = 1000, step.min=1, maxiter = 5e4))
+  end.time <- Sys.time()
+  
+  time_bqn2[i] <- end.time - start.time
+  obj_bqn2[i] <- fp$value.objfn
+  eval_bqn2[i] <- fp$fpevals
+}
+
+
+print(quantile(time_bqn2, probs = c(.1, .5, .9)))
+print(quantile(eval_bqn2, probs = c(.1, .5, .9)))
+print(quantile(obj_bqn2, probs = c(.1, .5, .9)))
 
 ########################################
 ## L-BFGS
 ########################################
 
-time_lbfgs <- rep(0, N)
-obj_lbfgs <- rep(0, N)
-eval_lbfgs <- rep(0, N)
+time_lbqn <- rep(0, N)
+obj_lbqn <- rep(0, N)
+eval_lbqn <- rep(0, N)
 
 for (i in 1:N){
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- LBFGS(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(m=10, tol = tol, objfn.inc = 1, maxiter = 5e4, intermed = TRUE))
+  fp <- LBQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(m=10, tol = tol, objfn.inc = 1, maxiter = 5e4))
   end.time <- Sys.time()
-  time_lbfgs[i] <- end.time - start.time
-  obj_lbfgs[i] <- fp$value.objfn
-  eval_lbfgs[i] <- fp$fpevals
+  time_lbqn[i] <- end.time - start.time
+  obj_lbqn[i] <- fp$value.objfn
+  eval_lbqn[i] <- fp$fpevals
 
-  chain <- (fp$p.inter)
-  
 }
+print(quantile(time_lbqn, probs = c(.1, .5, .9)))
+print(quantile(eval_lbqn, probs = c(.1, .5, .9)))
+print(quantile(obj_lbqn, probs = c(.1, .5, .9)))
 
 
 ##########################################
@@ -170,13 +196,17 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 1, maxiter = 5e4, intermed = TRUE))
+  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 1, maxiter = 5e4))
   end.time <- Sys.time()
 
   time_sq1[i] <- end.time - start.time
   obj_sq1[i] <- fp$value.objfn
   eval_sq1[i] <- fp$fpevals
   }
+
+print(quantile(time_sq1, probs = c(.1, .5, .9)))
+print(quantile(eval_sq1, probs = c(.1, .5, .9)))
+print(quantile(obj_sq1, probs = c(.1, .5, .9)))
 
 ##########################################
 ### SqS2
@@ -190,13 +220,17 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 2, maxiter = 5e4, intermed = TRUE))
+  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 2, maxiter = 5e4))
   end.time <- Sys.time()
 
   time_sq2[i] <- end.time - start.time
   obj_sq2[i] <- fp$value.objfn
   eval_sq2[i] <- fp$fpevals
   }
+
+print(quantile(time_sq2, probs = c(.1, .5, .9)))
+print(quantile(eval_sq2, probs = c(.1, .5, .9)))
+print(quantile(obj_sq2, probs = c(.1, .5, .9)))
 
 ##########################################
 ### SqS3
@@ -210,13 +244,17 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 3, maxiter = 5e4, intermed = TRUE))
+  fp <- squarem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(K=2, tol = tol, method = 3, maxiter = 5e4))
   end.time <- Sys.time()
 
   time_sq3[i] <- end.time - start.time
   obj_sq3[i] <- fp$value.objfn
   eval_sq3[i] <- fp$fpevals
   }
+
+print(quantile(time_sq3, probs = c(.1, .5, .9)))
+print(quantile(eval_sq3, probs = c(.1, .5, .9)))
+print(quantile(obj_sq3, probs = c(.1, .5, .9)))
 
 ##########################################
 ## Zhou's quasi-Newton for q=2
@@ -235,44 +273,28 @@ for (i in 1:N){
   time_zal[i] <- end.time - start.time
   obj_zal[i] <- fp$objective
   eval_zal[i] <- fp$fevals
-
-  chain <- t(fp$Xhist)
   
 }
 
+print(quantile(time_zal, probs = c(.1, .5, .9)))
+print(quantile(eval_zal, probs = c(.1, .5, .9)))
+print(quantile(obj_zal, probs = c(.1, .5, .9)))
+
 ##############################################
 
-save(time_mm, time_bfgs, time_lbfgs, time_sq1, time_sq2, time_sq3, time_zal,
-     eval_mm, eval_bfgs, eval_lbfgs, eval_sq1, eval_sq2, eval_sq3, eval_zal,
-     obj_mm, obj_bfgs, obj_lbfgs, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/eigen-objects_sd10.Rdata")
+save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal,
+     eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal,
+     obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/eigen-objects_sd10.Rdata")
 
 load("Out/eigen-objects_sd10.Rdata")
+time_range <- range(time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal)
+eval_range <- range(eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal)
+obj_range <- range(obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal)
 
-time_range <- range(time_mm, time_bfgs, time_lbfgs, time_sq1, time_sq2, time_sq3, time_zal)
-eval_range <- range(eval_mm, eval_bfgs, eval_lbfgs, eval_sq1, eval_sq2, eval_sq3, eval_zal)
-obj_range <- range(obj_mm, obj_bfgs, obj_lbfgs, obj_sq1, obj_sq2, obj_sq3, obj_zal)
-
-pdf(file = "Out/eigen-objVSeval_sd10.pdf")
-plot(eval_mm, obj_mm, col = "red", xlim=eval_range, ylim = c(obj_range[1]-1e-9, obj_range[2]-1e-8), pch=19, cex=2, xlab="Evaluations", ylab="Objective")
-points(eval_bfgs, obj_bfgs, col="purple", pch=19, cex=2)
-points(eval_lbfgs, obj_lbfgs, col="pink", pch=19, cex=2)
-points(eval_sq1, obj_sq1, col="lightblue", pch=19, cex=2)
-#points(eval_sq2, obj_sq2, col=6, pch=19, cex=2)
-#points(eval_sq3, obj_sq3, col=7, pch=19)
-points(eval_zal, obj_zal, col="steelblue1", pch=19, cex=2)
-legend("topright", legend = c("MM", "BFGS", "L-BFGS", "SQUAREM", "ZAL"),
-       col =c("red", "purple", "pink", "lightblue", "steelblue1"), pch=19, cex=1.5)
-dev.off()
-
-pdf(file = "Out/eigen-objVStime_sd10.pdf")
-plot(time_mm, obj_mm, col = "red", xlim=time_range, ylim = c(obj_range[1]-1e-9, obj_range[2]-1e-8), pch=19, cex=2, xlab="Time", ylab="Objective")
-points(time_bfgs, obj_bfgs, col="purple", pch=19, cex=2)
-points(time_lbfgs, obj_lbfgs, col="pink", pch=19, cex=2)
-points(time_sq1, obj_sq1, col="lightblue", pch=19, cex=2)
-#points(eval_sq2, obj_sq2, col=6, pch=19)
-#points(eval_sq3, obj_sq3, col=7, pch=19)
-points(time_zal, obj_zal, col="steelblue1", pch=19, cex=2)
-legend("topright", legend = c("MM", "BFGS", "L-BFGS", "SQUAREM", "ZAL"),
-       col =c("red", "purple", "pink", "lightblue", "steelblue1"), pch=19, cex=1.5)
-dev.off()
-
+plot(time_bqn1, eval_bqn1, pch=19, col  ="red", xlim = time_range, ylim = eval_range)
+points(time_bqn2, eval_bqn2, pch=19, col = "green3")
+points(time_lbqn, eval_lbqn, pch=19, col = "blue")
+points(time_sq1, eval_sq1, pch=19, col = "pink")
+points(time_sq2, eval_sq2, pch=19)
+points(time_sq3, eval_sq3, pch=19)
+points(time_zal, eval_zal, pch=19)
