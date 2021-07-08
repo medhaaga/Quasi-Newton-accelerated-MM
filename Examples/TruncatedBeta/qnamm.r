@@ -14,7 +14,7 @@
 #' @references H Zhou, D Alexander, and K Lange. (2011) A quasi-Newton acceleration method for high-dimensional optimization algorithms, Statistics and Computing, 21(2):261-273.
 
 library("corpcor")
-qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4) {
+qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=1e4, tol=1e-7, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4) {
 
   conv <- TRUE
 
@@ -87,11 +87,7 @@ qnamm <- function(x, fx_mm, qn, fx_obj, max_iter=100, tol=1e-6, batch=4, freq1=f
       nacc <- nacc + 1
     }
     objective[i] <- objval
-    #
-    # stopping rule
-    #
-    #print(norm(as.matrix(x-x_old),'f')/(norm(as.matrix(x_old),'f')+1))
-
+    
     if (norm(as.matrix(x-x_old),"2") < tol) break
   }
   fevals <- fevals + 2*i

@@ -1,116 +1,14 @@
+###############################################
+######### Truncated beta binomial #############
+###############################################
+
 set.seed(1)
-library(pracma)
+rm(list = ls())
 library(SQUAREM)
 library(quasiNewtonMM)
-library(MASS)
 source("qnamm.r")
+source("functions.R")
 library(RColorBrewer)
-library(graphics)
-
-
-log.likelihood <- function(x, batch, freq1, freq2, freq3, freq4){
-
-  pi <- x[1]
-  alpha <- x[2]
-  freq <- freq1 + freq2 + freq3 + freq4
-
-  distri <- function(x, batch = 4, pi, alpha){
-    prod1 <- 1
-    prod2 <- 1
-    prod3 <- 1
-    if (x != 0){
-      for (j in 0:(x-1)){
-        prod1 <- prod1*(pi + j*alpha)
-      }
-    }
-    if(x != batch){
-      for (k in 0:(batch-x-1)){
-        prod2 <- prod2*(1 - pi + k*alpha)
-      }
-    }
-    for (l in 0:(batch-1)){
-      prod3 <- prod3*(1 + l*alpha)
-    }
-    return ((choose(batch, x) * prod1 * prod2)/prod3)
-  }
-
-
-  denominator <- freq*log(1 - distri(x = 0, batch = 4, pi, alpha))
-  dens1 <- freq1*log(distri(x=1, batch=4, pi=pi, alpha))
-  dens2 <- freq2*log(distri(x=2, batch=4, pi, alpha))
-  dens3 <- freq3*log(distri(x=3, batch=4, pi, alpha))
-  dens4 <- freq4*log(distri(x=4, batch=4, pi, alpha))
-
-  return (-dens1 - dens2 - dens3 - dens4 + denominator)
-}
-
-update <- function(now, batch = 4, freq1, freq2, freq3, freq4){
-
-  new <- now
-  pi <- now[1]
-  alpha <- now[2]
-  freq <- freq1 + freq2 + freq3 + freq4
-  prod2 <- 1
-  prod3 <- 1
-  for (k in 0:(batch-1)){
-    prod2 <- prod2*(1 - pi + k*alpha)
-    prod3 <- prod3*(1 + k*alpha)
-  }
-  foo <- prod2/prod3
-  foo <- foo/(1 - foo)
-  s1 <- c(freq, freq2 + freq3 + freq4, freq3 + freq4, freq4)
-  s2 <- c(freq1 + freq2 + freq3 + freq*foo, freq1 + freq2 + freq*foo, freq1 + freq*foo, freq*foo)
-  r <- rep(freq*(1+foo), 4)
-  num1 <- 0
-  num2 <- 0
-  denom1 <- 0
-  denom2 <- 0
-  for (k in 0:3){
-    num1 <- num1 + (((s1[k+1]*k*alpha)/(pi + k*alpha)) + ((s2[k+1]*k*alpha)/(1 - pi + k*alpha)))
-    num2 <- num2 + ((s1[k+1]*pi)/(pi + k*alpha))
-    denom1 <- denom1 + ((r[k+1]*k)/(1 + k*alpha))
-    denom2 <- denom2 + (((s1[k+1]*pi) / (pi + k*alpha)) + ((s2[k+1]*(1 - pi)) / (1 - pi + k*alpha)))
-  }
-  new[2] <- num1/denom1
-  new[1] <- num2/denom2
-  return (new)
-}
-
-
-f <- function(pi, alpha, batch, freq1, freq2, freq3, freq4){
-
-  freq <- freq1 + freq2 + freq3 + freq4
-
-  distri <- function(x, batch = 4, pi, alpha){
-    prod1 <- 1
-    prod2 <- 1
-    prod3 <- 1
-    if (x != 0){
-      for (j in 0:(x-1)){
-        prod1 <- prod1*(pi + j*alpha)
-      }
-    }
-    if(x != batch){
-      for (k in 0:(batch-x-1)){
-        prod2 <- prod2*(1 - pi + k*alpha)
-      }
-    }
-    for (l in 0:(batch-1)){
-      prod3 <- prod3*(1 + l*alpha)
-    }
-    return ((choose(batch, x) * prod1 * prod2)/prod3)
-  }
-
-
-  denominator <- freq*log(1 - distri(x = 0, batch = 4, pi, alpha))
-  dens1 <- freq1*log(distri(x=1, batch=4, pi=pi, alpha))
-  dens2 <- freq2*log(distri(x=2, batch=4, pi, alpha))
-  dens3 <- freq3*log(distri(x=3, batch=4, pi, alpha))
-  dens4 <- freq4*log(distri(x=4, batch=4, pi, alpha))
-
-  return (-dens1 - dens2 - dens3 - dens4 + denominator)
-}
-
 
 batch <- 4
 freq1 <- 15
@@ -133,26 +31,29 @@ z <- outer(X=x, Y=y, f, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=fr
 now <- start
 new <- start
 diff <- 100
-iter <- 0
+iter_mm <- 0
+chain_mm <- matrix(0, nrow = 1e7, ncol = 2)
+
 start.time <- Sys.time()
-chain <- matrix(0, nrow = 1e7, ncol = 2)
 while((diff > tol))
 {
-  iter <- iter + 1
-  if(iter %% 1000 == 0) print(iter)
+  iter_mm <- iter_mm + 1
+  if(iter_mm %% 1000 == 0) print(iter_mm)
   new <- update(now, batch, freq1, freq2, freq3, freq4)
-  chain[iter,] <- new
+  chain_mm[iter_mm,] <- new
   diff <- sqrt(crossprod(new-now))
   now <- new
 }
 end.time <- Sys.time()
+time_mm <- end.time - start.time
+obj_mm <- log.likelihood(new, batch, freq1, freq2, freq3, freq4)
+
+print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 5)))
+
 pdf(file = "Out/beta-contour_MM.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
-  points(chain[1:iter,1],chain[1:iter,2], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(2,(iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(chain_mm[1:iter_mm,1],chain_mm[1:iter_mm,2], col = c(rep(1,(iter_mm-1)), 2), pch = c(rep(1,(iter_mm-1)), 19), cex = c(rep(2,(iter_mm-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-print(paste("Fevals: ", iter, "theta: ", new, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", log.likelihood(new, batch, freq1, freq2, freq3, freq4)))
 
 
 ########################################
@@ -160,115 +61,136 @@ print(paste("Fevals: ", iter, "theta: ", new, "Time: ", end.time-start.time,
 ########################################
 
 start.time <- Sys.time()
-fp <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_bqn1 <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
            freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4,
-           control = list(tol = tol, qn=1, step.max=1000000, objfn.inc = 1, maxiter = 1e4, intermed = TRUE))
+           control = list(tol = tol, qn=1, step.max=1e6, maxiter = 1e4, intermed = TRUE))
 end.time <- Sys.time()
+time_bqn1 <- end.time - start.time
 
 pdf(file = "Out/beta-contour_BQN1.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_bqn1$p.inter[,1],fp_bqn1$p.inter[,2], col = c(rep(1,(fp_bqn1$iter-1)), 2), pch = c(rep(1,(fp_bqn1$iter-1)), 19), cex = c(rep(2,(fp_bqn1$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
+print(paste("Fevals: ", fp_bqn1$fpevals, "Ierations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 5)))
 
 ########################################
 ## BQN, q=2
 ########################################
 
 start.time <- Sys.time()
-fp <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_bqn2 <- BQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
            freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4,
            control = list(tol = tol, qn=2, step.max=1000000, objfn.inc = 1, maxiter = 1e4, intermed = TRUE))
 end.time <- Sys.time()
+time_bqn2 <- end.time - start.time
+
+print(paste("F evals: ", fp_bqn2$fpevals, "Iterations: ", fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 5)))
 
 pdf(file = "Out/beta-contour_BQN2.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_bqn2$p.inter[,1],fp_bqn2$p.inter[,2], col = c(rep(1,(fp_bqn2$iter-1)), 2), pch = c(rep(1,(fp_bqn2$iter-1)), 19), cex = c(rep(2,(fp_bqn2$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
 
 
-  ########################################
+#########################################
 ## L-BQN
 ########################################
 
 start.time <- Sys.time()
-fp <- LBQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_lbqn <- LBQN(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
            freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4,
            control = list(m=10, tol = tol, objfn.inc = .001, maxiter = 1e4, intermed = TRUE))
 end.time <- Sys.time()
+time_lbqn <- end.time - start.time
+
+print(paste("F evals: ", fp_lbqn$fpevals, "Iterations: ", fp_lbqn$iter, "Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 5)))
 
 pdf(file = "Out/beta-contour_LBQN.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_lbqn$p.inter[,1],fp_lbqn$p.inter[,2], col = c(rep(1,(fp_lbqn$iter-1)), 2), pch = c(rep(1,(fp_lbqn$iter-1)), 19), cex = c(rep(2,(fp_lbqn$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
-
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
 
 
 ##########################################
 ### SqS1
 #############################################
 
-start.time <- Sys.time()
-fp <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_sq1_img <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
               freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, control = list(K=1, tol = tol, method = 1, maxiter = 5e4, intermed = TRUE))
-end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS1.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
-  points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+  points(fp_sq1_img$p.inter[,1],fp_sq1_img$p.inter[,2], col = c(rep(1,(fp_sq1_img$iter-1)), 2), pch = c(rep(1,(fp_sq1_img$iter-1)), 19), cex = c(rep(2,(fp_sq1_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
+
+start.time <- Sys.time()
+fp_sq1 <- turboem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+              freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, method = "squarem", control.method = list(K=1, version=1), control.run = list(tol=tol, maxiter = 1e4))
+end.time <- Sys.time()
+time_sq1 <- end.time - start.time
+
+print(paste("F evals: ", fp_sq1$fp_sq1eval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
 
 
 ##########################################
 ### SqS2
 #############################################
 
-start.time <- Sys.time()
-fp <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_sq2_img <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
               freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, control = list(K=1, tol = tol, method = 2, maxiter = 5e4, intermed = TRUE))
-end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS2.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_sq2_img$p.inter[,1],fp_sq2_img$p.inter[,2], col = c(rep(1,(fp_sq2_img$iter-1)), 2), pch = c(rep(1,(fp_sq2_img$iter-1)), 19), cex = c(rep(2,(fp_sq2_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
+
+start.time <- Sys.time()
+fp_sq2 <- turboem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+              freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, method = "squarem", control.method = list(K=1, version=2), control.run = list(tol=tol, maxiter = 1e4))
+end.time <- Sys.time()
+time_sq2 <- end.time - start.time
+
+print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
 
 
 ##########################################
 ### SqS3
 #############################################
 
-start.time <- Sys.time()
-fp <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+fp_sq3_img <- squarem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
               freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, control = list(K=1, tol = tol, method = 3, maxiter = 5e4, intermed = TRUE))
-end.time <- Sys.time()
 
 pdf(file = "Out/beta-contour_SqS3.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$p.inter[,1],fp$p.inter[,2], col = c(rep(1,(fp$iter-1)), 2), pch = c(rep(1,(fp$iter-1)), 19), cex = c(rep(2,(fp$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_sq3_img$p.inter[,1],fp_sq3_img$p.inter[,2], col = c(rep(1,(fp_sq3_img$iter-1)), 2), pch = c(rep(1,(fp_sq3_img$iter-1)), 19), cex = c(rep(2,(fp_sq3_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
-print(paste("Fevals: ", fp$fpevals, "Ierations: ", fp$iter, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$value.objfn))
-
-
-######################################
-### ZAL
-########################################
 
 start.time <- Sys.time()
-fp <- qnamm(x=start, fx_mm=update, qn=1, fx_obj=log.likelihood, max_iter=5e4, tol=tol, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
+fp_sq3 <- turboem(par = start, fixptfn = update, objfn = log.likelihood, batch = 4,
+              freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, method = "squarem", control.method = list(K=1, version=3), control.run = list(tol=tol, maxiter = 1e4))
 end.time <- Sys.time()
+time_sq3 <- end.time - start.time
 
-iter <- dim(fp$Xhist)[2]
-pdf(file = "Out/beta-contour_ZAL1.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp$Xhist[1,],fp$Xhist[2,], col = c(rep(1,(iter-1)), 2), pch = c(rep(1,(iter-1)), 19), cex = c(rep(2,(iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
+print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
+
+
+###################################################################
+### ZAL (the naive off-the-shelf implementation of this ###########
+######## algorithm using turboem function fails to converge) ######
+###################################################################
+
+start.time <- Sys.time()
+fp_zal <- qnamm(x=start, fx_mm = update, qn=1, fx_obj=log.likelihood, batch = 4,
+            freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, tol=tol, max_iter = 5e4)
+end.time <- Sys.time()
+time_zal <- end.time - start.time
+
+pdf(file = "Out/beta-contour_ZAL.pdf", height = 5, width = 7)
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal$Xhist[1,],fp_zal$Xhist[2,], col = c(rep(1,(ncol(fp_zal$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-print(paste("Fevals: ", fp$fevals, "Ierations: ", fp$accept + fp$reject, "Time: ", end.time-start.time, 
-            "Negative log likelihood: ", fp$objective))
+print(paste("F evals: ", fp_zal$fevals, "Iterations: ", fp_zal$accept + fp_zal$reject, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$objective, 4)))
+
+
+################ Save all objects for reproducibility ################# 
+
+save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, iter_mm, chain_mm, 
+     obj_mm, fp_bqn1, fp_bqn2, fp_lbqn, fp_sq1, fp_sq1_img, fp_sq2, fp_sq2_img, fp_sq3, fp_sq3_img, fp_zal, file = "Out/beta-objects.Rdata")
+
 
