@@ -8,7 +8,7 @@ source("TruncatedBeta/functions.R")
 ###### Example 1: Table-1 ##############
 ########################################
 
-load(file = "Quadratic/Out/quad-objects_sq1e2.Rdata")
+load(file = "Quadratic/Out/quad-objects.Rdata")
 
 print(quantile(eval_mm, probs = c(.5, .25, .75)))
 print(round(quantile(time_mm, probs = c(.5, .25, .75)), 3))
@@ -56,7 +56,7 @@ df2 <- data.frame("B1" = time_bqn1, "B2" = time_bqn2, "L-B" = time_lbqn, "Sq" = 
 
 pdf(file = "Quadratic/Out/quad-boxplot_sd1e2.pdf", width = 12, height = 5)
 par(mfrow = c(1,2))
-boxplot(df1, xlab = "Acceleration Method", ylab = "No. of evaluations")
+boxplot(df1, xlab = "Acceleration Method", ylab = "F evals")
 boxplot(df2, xlab = "Acceleration Method", ylab = "Time")
 dev.off()
 
@@ -64,7 +64,7 @@ dev.off()
 ###### Example 2: Table-2 #############
 ########################################
 
-load(file = "TruncatedBeta/Out/beta-objects.Rdata")
+load(file = "TruncatedBeta/Out/beta-objects1.Rdata")
 
 print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 5)))
 print(paste("Fevals: ", fp_bqn1$fpevals, "Ierations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 5)))
@@ -73,13 +73,13 @@ print(paste("F evals: ", fp_lbqn$fpevals, "Iterations: ", fp_lbqn$iter, "Time: "
 print(paste("F evals: ", fp_sq1$fp_sq1eval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
 print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
 print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
-print(paste("F evals: ", fp_zal$fevals, "Iterations: ", fp_zal$accept + fp_zal$reject, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$objective, 4)))
+print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
 
 ########################################
 ###### Example 2: Figure-3 #############
 ########################################
 
-load(file = "TruncatedBeta/Out/beta-objects.Rdata")
+load(file = "TruncatedBeta/Out/beta-objects1.Rdata")
 
 batch <- 4
 freq1 <- 15
@@ -91,42 +91,42 @@ y <- seq(0, 2, 0.01)
 z <- outer(X=x, Y=y, f, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
 
 
-pdf(file = "TruncatedBeta/Out/beta-contour_MM.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_MM.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(chain_mm[1:iter_mm,1],chain_mm[1:iter_mm,2], col = c(rep(1,(iter_mm-1)), 2), pch = c(rep(1,(iter_mm-1)), 19), cex = c(rep(2,(iter_mm-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_BQN1.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_BQN1.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_bqn1$p.inter[,1],fp_bqn1$p.inter[,2], col = c(rep(1,(fp_bqn1$iter-1)), 2), pch = c(rep(1,(fp_bqn1$iter-1)), 19), cex = c(rep(2,(fp_bqn1$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_BQN2.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_BQN2.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_bqn2$p.inter[,1],fp_bqn2$p.inter[,2], col = c(rep(1,(fp_bqn2$iter-1)), 2), pch = c(rep(1,(fp_bqn2$iter-1)), 19), cex = c(rep(2,(fp_bqn2$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_LBQN.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_LBQN.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_lbqn$p.inter[,1],fp_lbqn$p.inter[,2], col = c(rep(1,(fp_lbqn$iter-1)), 2), pch = c(rep(1,(fp_lbqn$iter-1)), 19), cex = c(rep(2,(fp_lbqn$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_SqS1.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_SqS1.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
   points(fp_sq1_img$p.inter[,1],fp_sq1_img$p.inter[,2], col = c(rep(1,(fp_sq1_img$iter-1)), 2), pch = c(rep(1,(fp_sq1_img$iter-1)), 19), cex = c(rep(2,(fp_sq1_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_SqS2.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_SqS2.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_sq2_img$p.inter[,1],fp_sq2_img$p.inter[,2], col = c(rep(1,(fp_sq2_img$iter-1)), 2), pch = c(rep(1,(fp_sq2_img$iter-1)), 19), cex = c(rep(2,(fp_sq2_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_SqS3.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_SqS3.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_sq3_img$p.inter[,1],fp_sq3_img$p.inter[,2], col = c(rep(1,(fp_sq3_img$iter-1)), 2), pch = c(rep(1,(fp_sq3_img$iter-1)), 19), cex = c(rep(2,(fp_sq3_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
-pdf(file = "TruncatedBeta/Out/beta-contour_ZAL.pdf", height = 5, width = 7)
+pdf(file = "TruncatedBeta/Out/beta-contour1_ZAL.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal$Xhist[1,],fp_zal$Xhist[2,], col = c(rep(1,(ncol(fp_zal$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
 
 ########################################
-###### Example 3: Table-3 #############
+###### Example 3: Table-3 #############3ewsaz 
 ########################################
 
 D = c("descent", "ascent")
@@ -164,21 +164,21 @@ for ( d in 1:2)
   
   pdf(file = paste("GenEigen/Out/eigen-objVSeval_", dir, ".pdf", sep = ""), height = 5, width = 6)
   par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
-  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, col = "blue")
-  points(eval_sq3, (-1)^(d+1)*obj_sq3, pch=19, col = "pink")
-  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, col = "orange")
-  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, col = "black")
+  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.4, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
+  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.4, col = "blue")
+  points(eval_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.4, col = "pink")
+  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.4, col = "orange")
+  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.4, col = "black")
   legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
   dev.off()
   
   pdf(file = paste("GenEigen/Out/eigen-objVStime_", dir, ".pdf", sep = ""), height = 5, width = 6)
   par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(time_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
-  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, col = "blue")
-  points(time_sq3, (-1)^(d+1)*obj_sq3, pch=19, col = "pink")
-  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, col = "orange")
-  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, col = "black")
+  plot(time_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.4, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
+  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.4, col = "blue")
+  points(time_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.4, col = "pink")
+  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.4, col = "orange")
+  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.4, col = "black")
   legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
   dev.off()
 }
@@ -234,4 +234,20 @@ print(round(time_zal[!is.na(time_zal)], 3))
 print(eval_zal[!is.na(eval_zal)])
 print(round(obj_zal[!is.na(obj_zal)], 4))
 
+########################################
+###### Example 2: Table-6 #############
+########################################
 
+for (d in 2:4)
+{
+  load(file = paste("TruncatedBeta/Out/beta-objects", d, ".Rdata", sep=""))
+  print(paste("Dataset:", d))
+  print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 5)))
+  print(paste("F evals: ", fp_bqn1$fpevals, "Iterations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 5)))
+  print(paste("F evals: ", fp_sq1$fpeval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
+  print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
+  print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
+  print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
+  
+  
+}
