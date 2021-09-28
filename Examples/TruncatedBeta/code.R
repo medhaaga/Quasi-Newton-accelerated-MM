@@ -3,8 +3,8 @@
 ###############################################
 
   
-set.seed(1)
 rm(list = ls())
+set.seed(1)
 library(SQUAREM)
 library(quasiNewtonMM)
 source("qnamm.r")
@@ -180,10 +180,10 @@ for (h in 1:4)
   ######## algorithm using turboem function fails to converge) ######
   ###################################################################
   
-  fp_zal <- qnamm(x=start, fx_mm = update, qn=1, fx_obj = log.likelihood, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
+  fp_zal_temp <- qnamm(x=start, fx_mm = update, qn=1, fx_obj = log.likelihood, batch=4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
   
   pdf(file = paste("Out/beta-contour", h, "_ZAL.pdf", sep=""), height = 5, width = 7)
-  filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal$Xhist[1,],fp_zal$Xhist[2,], col = c(rep(1,(ncol(fp_zal$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
+  filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal_temp$Xhist[1,],fp_zal_temp$Xhist[2,], col = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal_temp$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
   dev.off()
   
   start.time <- Sys.time()
@@ -199,7 +199,7 @@ for (h in 1:4)
   ################ Save all objects for reproducibility ################# 
   
   save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, iter_mm, chain_mm, 
-       obj_mm, fp_bqn1, fp_bqn2, fp_lbqn, fp_sq1, fp_sq1_img, fp_sq2, fp_sq2_img, fp_sq3, fp_sq3_img, fp_zal, file = paste("Out/beta-objects", h, ".Rdata", sep=""))
+       obj_mm, fp_bqn1, fp_bqn2, fp_lbqn, fp_sq1, fp_sq1_img, fp_sq2, fp_sq2_img, fp_sq3, fp_sq3_img, fp_zal, fp_zal_temp, file = paste("Out/beta-objects", h, ".Rdata", sep=""))
   
   
 }

@@ -1,5 +1,3 @@
-rm(list = ls())
-
 
 log.likelihood <- function(x, batch, freq1, freq2, freq3, freq4){
   

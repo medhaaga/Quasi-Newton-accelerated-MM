@@ -47,14 +47,14 @@ print(round(quantile(obj_zal, c(.5, .25, .75)), 4))
 ###### Example 1: Figure-2 #############
 ########################################
 
-load(file = "Quadratic/Out/quad-objects_sq1e2.Rdata")
+load(file = "Quadratic/Out/quad-objects_sq1e3.Rdata")
 
 df1 <- data.frame( "B1" = eval_bqn1, "B2" = eval_bqn2, "L-B" = eval_lbqn, "Sq" = eval_sq3, "ZAL" = eval_zal)
 
 df2 <- data.frame("B1" = time_bqn1, "B2" = time_bqn2, "L-B" = time_lbqn, "Sq" = time_sq3, "ZAL" = time_zal)
 
 
-pdf(file = "Quadratic/Out/quad-boxplot_sd1e2.pdf", width = 12, height = 5)
+pdf(file = "Quadratic/Out/quad-boxplot_sd1e3.pdf", width = 12, height = 5)
 par(mfrow = c(1,2))
 boxplot(df1, xlab = "Acceleration Method", ylab = "F evals")
 boxplot(df2, xlab = "Acceleration Method", ylab = "Time")
@@ -66,14 +66,14 @@ dev.off()
 
 load(file = "TruncatedBeta/Out/beta-objects1.Rdata")
 
-print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 5)))
-print(paste("Fevals: ", fp_bqn1$fpevals, "Ierations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 5)))
-print(paste("F evals: ", fp_bqn2$fpevals, "Iterations: ", fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 5)))
-print(paste("F evals: ", fp_lbqn$fpevals, "Iterations: ", fp_lbqn$iter, "Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 5)))
-print(paste("F evals: ", fp_sq1$fp_sq1eval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
+print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
+print(paste("Fevals: ", fp_bqn1$fpevals, "Ierations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
+print(paste("F evals: ", fp_bqn2$fpevals, "Iterations: ", fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 4)))
+print(paste("F evals: ", fp_lbqn$fpevals, "Iterations: ", fp_lbqn$iter, "Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 4)))
+print(paste("F evals: ", fp_sq1$fpeval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
 print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
 print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
-print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
+    print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
 
 ########################################
 ###### Example 2: Figure-3 #############
@@ -121,7 +121,7 @@ filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_sq3_img$p.inter[,
 dev.off()
 
 pdf(file = "TruncatedBeta/Out/beta-contour1_ZAL.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal$Xhist[1,],fp_zal$Xhist[2,], col = c(rep(1,(ncol(fp_zal$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal_temp$Xhist[1,],fp_zal_temp$Xhist[2,], col = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal_temp$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
 
@@ -242,8 +242,8 @@ for (d in 2:4)
 {
   load(file = paste("TruncatedBeta/Out/beta-objects", d, ".Rdata", sep=""))
   print(paste("Dataset:", d))
-  print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 5)))
-  print(paste("F evals: ", fp_bqn1$fpevals, "Iterations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 5)))
+  print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
+  print(paste("F evals: ", fp_bqn1$fpevals, "Iterations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
   print(paste("F evals: ", fp_sq1$fpeval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
   print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
   print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
