@@ -15,7 +15,7 @@ A <- C + t(C)
 B <- D %*% t(D)
 
 N <- 10
-start_rep <- matrix(rnorm(N*dim, mean = 1, sd = 100), nrow = N, ncol = dim)
+start_rep <- matrix(rnorm(N*dim, mean = 0, sd = 100), nrow = N, ncol = dim)
 tol <- 1e-7
 D <- c("descent", "ascent")
 
@@ -245,22 +245,22 @@ for ( d in 1:2)
   
   pdf(file = paste("Out/eigen-objVSeval_", dir, ".pdf", sep = ""), height = 5, width = 6)
   par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
-  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, col = "blue")
-  points(eval_sq3, (-1)^(d+1)*obj_sq3, pch=19, col = "pink")
-  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, col = "orange")
-  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, col = "black")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
+  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.2, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
+  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.2, col = "blue")
+  points(eval_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.2, col = "pink")
+  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.2, col = "orange")
+  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.2, col = "black")
+  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, cex=1.2, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
   dev.off()
   
   pdf(file = paste("Out/eigen-objVStime_", dir, ".pdf", sep = ""), height = 5, width = 6)
   par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(time_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
-  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, col = "blue")
-  points(time_sq3, (-1)^(d+1)*obj_sq3, pch=19, col = "pink")
-  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, col = "orange")
-  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, col = "black")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
+  plot(time_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.2, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
+  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.2, col = "blue")
+  points(time_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.2, col = "pink")
+  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.2, col = "orange")
+  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.2, col = "black")
+  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, cex=1.2, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
   dev.off()
 }
 
