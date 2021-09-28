@@ -104,3 +104,14 @@ f <- function(pi, alpha, batch, freq1, freq2, freq3, freq4){
   return (-dens1 - dens2 - dens3 - dens4 + denominator)
 }
 
+######## function returns TRUE if the parameters satisfy constraint 
+
+param_constraint <- function(par){
+  pi <- par[1]
+  alpha <- par[2]
+  if (alpha > 0 && pi > 0 && pi < 1)
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
