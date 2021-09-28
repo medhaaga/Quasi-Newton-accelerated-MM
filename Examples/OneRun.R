@@ -8,7 +8,7 @@ source("TruncatedBeta/functions.R")
 ###### Example 1: Table-1 ##############
 ########################################
 
-load(file = "Quadratic/Out/quad-objects_sq1e2.Rdata")
+load(file = "Quadratic/Out/quad-objects_sq1e3.Rdata")
 
 print(quantile(eval_mm, probs = c(.5, .25, .75)))
 print(round(quantile(time_mm, probs = c(.5, .25, .75)), 3))
