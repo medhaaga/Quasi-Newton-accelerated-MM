@@ -12,7 +12,7 @@ source("functions.R")
 ##################################################
 
 set.seed(1)
-dim <- 20
+dim <- 25
 tol <- 1e-7
 P <- (dim/2)*(dim+3)
 n <- 100
@@ -24,7 +24,7 @@ N <- 1
 start_rep <- matrix(0, nrow = N, ncol = P)
 for (i in 1:N)
 {
-  mu0 <- colMeans(data) + rnorm(dim, sd = 100)
+  mu0 <- colMeans(data)
   sigma0 <- cov(data)
   start_rep[i,] <- c(mu0, upper.triangle(sigma0, diag=  TRUE))
 }
@@ -276,7 +276,7 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- turboem(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data, 
+  fp <- turboem(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data, pconstr = param_constraint, 
                 method = "qn", control.method = list(qn=2), control.run = list(tol = tol, maxiter = 1e3))
   end.time <- Sys.time()
   
@@ -292,8 +292,8 @@ print(round(quantile(time_zal[!is.na(time_zal)], probs = c(.5, .25, .75)), 3))
 print(quantile(eval_zal[!is.na(eval_zal)], probs = c(.5, .25, .75)))
 print(round(quantile(obj_zal[!is.na(obj_zal)], probs = c(.5, .25, .75)), 4))
 
-save(time_mm, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal,
-     eval_mm, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal,
-     obj_mm, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/multiT-objects.Rdata")
+save(time_mm, time_pxem, time_bqn1, time_bqn2, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal,
+     eval_mm, eval_pxem, eval_bqn1, eval_bqn2, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal,
+     obj_mm, obj_pxem, obj_bqn1, obj_bqn2, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, file = "Out/multiT-objects.Rdata")
 
 

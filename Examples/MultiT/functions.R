@@ -59,3 +59,15 @@ update_pxem <-  function(par, n, dim, data){
   
   return (c(new.mu, upper.triangle(new.sigma, diag = TRUE)))
 }
+
+param_constraint <- function(par)
+{
+  P <- length(par)
+  p <- (-3 + sqrt(9 + (8*P)))/2
+  vec <- par[-c(1,p)]
+  mat <- VecToMat(vec, p)
+  if(min(eigen(mat)$values) < 0)
+    return(FALSE)
+  else
+    return(TRUE)
+}
