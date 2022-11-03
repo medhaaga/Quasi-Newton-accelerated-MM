@@ -1,3 +1,8 @@
+
+#############################################
+######## Multivariate t-distribution ########
+#############################################
+
 rm(list = ls())
 
 
@@ -18,6 +23,17 @@ likelihood <- function(par, n, dim, data){
     like = like - ((1+dim)/2) * log(1 + t(data[i,] - mu) %*% sig.inv %*% (data[i,] - mu))
   }
   return(like)
+}
+
+neg.objective <- function(par, n, dim, data){
+  mu <- par[1:dim]
+  sigma <- VecToMat(par[-(1:dim)], dim)
+  like <- (n*log(det(sigma)))/2
+  sig.inv <- solve(sigma)
+  for (i in 1:n){
+    like = like - ((1+dim)/2) * log(1 + t(data[i,] - mu) %*% sig.inv %*% (data[i,] - mu))
+  }
+  return(-like)
 }
 
 update <-  function(par, n, dim, data){

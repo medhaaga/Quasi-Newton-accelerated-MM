@@ -5,7 +5,7 @@ source("TruncatedBeta/functions.R")
 
 
 ########################################
-###### Example 1: Table-1 ##############
+###### Example 1: Table-2 ##############
 ########################################
 
 load(file = "Quadratic/Out/quad-objects_sq1e3.Rdata")
@@ -21,6 +21,10 @@ print(round(quantile(obj_bqn1, c(.5, .25, .75)), 4))
 print(round(quantile(time_bqn2, c(.5, .25, .75)), 3))
 print(quantile(eval_bqn2, c(.5, .25, .75)))
 print(round(quantile(obj_bqn2, c(.5, .25, .75)), 4))
+
+print(round(quantile(time_bqn3, c(.5, .25, .75)), 3))
+print(quantile(eval_bqn3, c(.5, .25, .75)))
+print(round(quantile(obj_bqn3, c(.5, .25, .75)), 4))
 
 print(round(quantile(time_lbqn, c(.5, .25, .75)), 3))
 print(quantile(eval_lbqn, c(.5, .25, .75)))
@@ -42,38 +46,30 @@ print(round(quantile(time_zal, c(.5, .25, .75)), 3))
 print(quantile(eval_zal, c(.5, .25, .75)))
 print(round(quantile(obj_zal, c(.5, .25, .75)), 4))
 
+print(round(quantile(time_zal2, c(.5, .25, .75)), 3))
+print(quantile(eval_zal2, c(.5, .25, .75)))
+print(round(quantile(obj_zal2, c(.5, .25, .75)), 4))
+
+print(round(quantile(time_dar, c(.5, .25, .75)), 3))
+print(quantile(eval_dar, c(.5, .25, .75)))
+print(round(quantile(obj_dar, c(.5, .25, .75)), 4))
 
 ########################################
-###### Example 1: Figure-2 #############
-########################################
-
-load(file = "Quadratic/Out/quad-objects_sq1e3.Rdata")
-
-df1 <- data.frame( "B1" = eval_bqn1, "B2" = eval_bqn2, "L-B" = eval_lbqn, "Sq" = eval_sq3, "ZAL" = eval_zal)
-
-df2 <- data.frame("B1" = time_bqn1, "B2" = time_bqn2, "L-B" = time_lbqn, "Sq" = time_sq3, "ZAL" = time_zal)
-
-
-pdf(file = "Quadratic/Out/quad-boxplot_sd1e3.pdf", width = 12, height = 5)
-par(mfrow = c(1,2))
-boxplot(df1, xlab = "Acceleration Method", ylab = "F evals")
-boxplot(df2, xlab = "Acceleration Method", ylab = "Time")
-dev.off()
-
-########################################
-###### Example 2: Table-2 #############
+###### Example 2: Table-3 #############
 ########################################
 
 load(file = "TruncatedBeta/Out/beta-objects1.Rdata")
 
-print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
-print(paste("Fevals: ", fp_bqn1$fpevals, "Ierations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
-print(paste("F evals: ", fp_bqn2$fpevals, "Iterations: ", fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 4)))
-print(paste("F evals: ", fp_lbqn$fpevals, "Iterations: ", fp_lbqn$iter, "Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 4)))
-print(paste("F evals: ", fp_sq1$fpeval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
-print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
-print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
-    print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
+print(paste("MM Algo ------ F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
+print(paste("BQN1 --------- F evals: ", fp_bqn1$fpevals, "Iterations",  fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
+print(paste("BQN2 --------- F evals: ", fp_bqn2$fpevals, "Iterations",  fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 4)))
+print(paste("LBQN --------- F evals: ", fp_lbqn$fpevals, "Iterations",  fp_lbqn$iter,"Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 4)))
+print(paste("SQUAREM1 ----- F evals: ", fp_sq1$fpeval, "Iterations",  fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
+print(paste("SQUAREM2 ----- F evals: ", fp_sq2$fpeval, "Iterations",  fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
+print(paste("SQUAREM3 ----- F evals: ", fp_sq3$fpeval, "Iterations",  fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
+print(paste("ZAL1 ---------- F evals: ", fp_zal$fpeval, "Iterations",  fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
+print(paste("ZAL2 ---------- F evals: ", fp_zal2$fpeval, "Iterations",  fp_zal2$itr, "Time: ", round(time_zal2, 3), "Negative log likelihood: ", round(fp_zal2$value.objfn, 4)))
+print(paste("DAAREM ------- F evals: ", fp_dar$fpeval, "Iterations",  dim(fp_dar$p.intermed)[1], "Time: ", round(time_dar, 3), "Negative log likelihood: ", round(fp_dar$value.objfn, 4)))
 
 ########################################
 ###### Example 2: Figure-3 #############
@@ -108,7 +104,7 @@ filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_lbqn$p.inter[,1],
 dev.off()
 
 pdf(file = "TruncatedBeta/Out/beta-contour1_SqS1.pdf", height = 5, width = 7)
-filled.contour(x,y,z,plot.axes = { axis(1); axis(2); 
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2);
   points(fp_sq1_img$p.inter[,1],fp_sq1_img$p.inter[,2], col = c(rep(1,(fp_sq1_img$iter-1)), 2), pch = c(rep(1,(fp_sq1_img$iter-1)), 19), cex = c(rep(2,(fp_sq1_img$iter-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE))
 dev.off()
 
@@ -124,9 +120,16 @@ pdf(file = "TruncatedBeta/Out/beta-contour1_ZAL.pdf", height = 5, width = 7)
 filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal_temp$Xhist[1,],fp_zal_temp$Xhist[2,], col = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal_temp$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal_temp$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
 dev.off()
 
+pdf(file = "TruncatedBeta/Out/beta-contour1_ZAL2.pdf", height = 5, width = 7)
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_zal_temp2$Xhist[1,],fp_zal_temp2$Xhist[2,], col = c(rep(1,(ncol(fp_zal_temp2$Xhist)-1)), 2), pch = c(rep(1,(ncol(fp_zal_temp2$Xhist)-1)), 19), cex = c(rep(2,(ncol(fp_zal_temp2$Xhist)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
+dev.off()
+
+pdf(file = "TruncatedBeta/Out/beta-contour1_DAR.pdf", height = 5, width = 7)
+filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(fp_dar$p.intermed[,2],fp_dar$p.intermed[,3], col = c(rep(1,(nrow(fp_dar$p.intermed)-1)), 2), pch = c(rep(1,(ncol(fp_dar$p.intermed)-1)), 19), cex = c(rep(2,(ncol(fp_dar$p.intermed)-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
+dev.off()
 
 ########################################
-###### Example 3: Table-3 #############3ewsaz 
+###### Example 3: Table-4 #############3ewsaz
 ########################################
 
 D = c("descent", "ascent")
@@ -135,104 +138,92 @@ for (d in 1:2)
 {
   dir <- D[d]
   load(paste("GenEigen/Out/eigen-objects_", dir, "_sd1e2.Rdata", sep = ""))
-  
-  print(paste(round(time_mm[1], 3), eval_mm[1], round((-1)^(d+1)*obj_mm[1], 4)))
-  print(paste(round(time_bqn1[1], 3), eval_bqn1[1], round((-1)^(d+1)*obj_bqn1[1], 4)))
-  print(paste(round(time_lbqn[1], 3), eval_lbqn[1], round((-1)^(d+1)*obj_lbqn[1], 4)))
-  print(paste(round(time_sq1[1], 3), eval_sq1[1], round((-1)^(d+1)*obj_sq1[1], 4)))
-  print(paste(round(time_sq2[1], 3), eval_sq2[1], round((-1)^(d+1)*obj_sq2[1], 4)))
-  print(paste(round(time_sq3[1], 3), eval_sq3[1], round((-1)^(d+1)*obj_sq3[1], 4)))
-  print(paste(round(time_zal[1], 3), eval_zal[1], round((-1)^(d+1)*obj_zal[1], 4)))
-}
 
-
-########################################
-###### Example 3: Figure - 4 #############
-########################################
-
-D = c("descent", "ascent")
-
-for ( d in 1:2)
-{
-  dir <- D[d]
-  
-  load(paste("GenEigen/Out/eigen-objects_", dir, "_sd1e2.Rdata", sep = ""))
-  
-  time_range <- range(time_mm, time_bqn1, time_lbqn, time_sq3, time_zal)
-  eval_range <- range(eval_mm, eval_bqn1, eval_lbqn, eval_sq3,  eval_zal)
-  obj_range <- (-1)^(d+1)*range(obj_mm, obj_bqn1, obj_lbqn, obj_sq3, obj_zal)
-  
-  pdf(file = paste("GenEigen/Out/eigen-objVSeval_", dir, ".pdf", sep = ""), height = 5, width = 6)
-  par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.4, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
-  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.4, col = "blue")
-  points(eval_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.4, col = "pink")
-  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.4, col = "orange")
-  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.4, col = "black")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
-  dev.off()
-  
-  pdf(file = paste("GenEigen/Out/eigen-objVStime_", dir, ".pdf", sep = ""), height = 5, width = 6)
-  par(mar=c(5, 4, 4, 8), xpd = TRUE)
-  plot(time_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.4, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
-  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.4, col = "blue")
-  points(time_sq3, (-1)^(d+1)*obj_sq3, pch=19, cex=1.4, col = "pink")
-  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.4, col = "orange")
-  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.4, col = "black")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange"), pch=19, legend  =c("MM", "BQN, q=1", "L-BQN", "SQUAREM v3", "ZAL, q=2"))
-  dev.off()
+  print(paste("Case = ", dir))
+  print(paste("MM Algo ---------- Time: ", round(quantile(time_mm[1], .5), 3),  "Iterations: ", quantile(eval_mm[1], .5), "Negative log likelihood: ", round(quantile(obj_mm[1], .5), 4)))
+  print(paste("BQN1 ------------- Time: ", round(quantile(time_bqn1[1], .5), 3), "Iterations: ", quantile(eval_bqn1[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn1[1], .5), 4)))
+  print(paste("BQN2 ------------- Time: ", round(quantile(time_bqn2[1], .5), 3), "Iterations: ", quantile(eval_bqn2[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn2[1], .5), 4)))
+  print(paste("BQN3 ------------- Time: ", round(quantile(time_bqn3[1], .5), 3), "Iterations: ", quantile(eval_bqn3[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn3[1], .5), 4)))
+  print(paste("LBQN ------------- Time: ", round(quantile(time_lbqn[1], .5), 3), "Iterations: ", quantile(eval_lbqn[1], .5), "Negative log likelihood: ", round(quantile(obj_lbqn[1], .5), 4)))
+  print(paste("SQUAREM1 --------- Time: ", round(quantile(time_sq1[1], .5), 3), "Iterations: ", quantile(eval_sq1[1], .5), "Negative log likelihood: ", round(quantile(obj_sq1[1], .5), 4)))
+  print(paste("SQUAREM2 --------- Time: ", round(quantile(time_sq2[1], .5), 3), "Iterations: ", quantile(eval_sq2[1], .5), "Negative log likelihood: ", round(quantile(obj_sq2[1], .5), 4)))
+  print(paste("SQUAREM3 --------- Time: ", round(quantile(time_sq3[1], .5), 3), "Iterations: ", quantile(eval_sq3[1], .5), "Negative log likelihood: ", round(quantile(obj_sq3[1], .5), 4)))
+  print(paste("ZAL, q=1 --------- Time: ", round(quantile(time_zal[1], .5), 3), "Iterations: ", quantile(eval_zal[1], .5), "Negative log likelihood: ", round(quantile(obj_zal[1], .5), 4)))
+  print(paste("ZAL, q=2 --------- Time: ", round(quantile(time_zal2[1], .5), 3), "Iterations: ", quantile(eval_zal2[1], .5), "Negative log likelihood: ", round(quantile(obj_zal2[1], .5), 4)))
+  print(paste("ZAL, q=min(p,10)-- Time: ", round(quantile(time_zal3[1], .5), 3), "Iterations: ", quantile(eval_zal3[1], .5), "Negative log likelihood: ", round(quantile(obj_zal3[1], .5), 4)))
+  print(paste("DAAREM ----------- Time: ", round(quantile(time_dar[1], .5), 3), "Iterations: ", quantile(eval_dar[1], .5), "Negative log likelihood: ", round(quantile(obj_dar[1], .5), 4)))
 }
 
 ########################################
-###### Example 4: Table - 4 #############
+###### Example 4: Table - 5 #############
 ########################################
 
 load(file = "MultiT/Out/multiT-objects.Rdata")
 
 print(paste("Number of failures:", sum(is.na(time_mm))))
-print(round(time_mm, 3))
-print(eval_mm)
-print(round(obj_mm, 4))
+print(round(quantile(time_mm, probs = c(.5, .25, .75)), 3))
+print(quantile(eval_mm, probs = c(.5, .25, .75)))
+print(round(quantile(obj_mm, probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_pxem))))
-print(round(time_pxem[!is.na(time_pxem)], 3))
-print(eval_pxem[!is.na(eval_pxem)])
-print(round(obj_pxem[!is.na(obj_pxem)], 4))
+print(round(quantile(time_pxem[!is.na(time_pxem)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_pxem[!is.na(eval_pxem)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_pxem[!is.na(obj_pxem)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_bqn1))))
-print(round(time_bqn1[!is.na(time_bqn1)], 3))
-print(eval_bqn1[!is.na(eval_bqn1)])
-print(round(obj_bqn1[!is.na(obj_bqn1)], 4))
+print(round(quantile(time_bqn1[!is.na(time_bqn1)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_bqn1[!is.na(eval_bqn1)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_bqn1[!is.na(obj_bqn1)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_bqn2))))
-print(round(time_bqn2[!is.na(time_bqn2)], 3))
-print(eval_bqn2[!is.na(eval_bqn2)])
-print(round(obj_bqn2[!is.na(obj_bqn2)], 4))
+print(round(quantile(time_bqn2[!is.na(time_bqn2)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_bqn2[!is.na(eval_bqn2)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_bqn2[!is.na(obj_bqn2)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(time_bqn3))))
+print(round(quantile(time_bqn3[!is.na(time_bqn3)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_bqn3[!is.na(eval_bqn3)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_bqn3[!is.na(obj_bqn3)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_lbqn))))
-print(round(time_lbqn[!is.na(time_lbqn)], 3))
-print(eval_lbqn[!is.na(eval_lbqn)])
-print(round(obj_lbqn[!is.na(obj_lbqn)], 4))
+print(round(quantile(time_lbqn[!is.na(time_lbqn)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_lbqn[!is.na(eval_lbqn)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_lbqn[!is.na(obj_lbqn)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_sq1))))
-print(round(time_sq1[!is.na(time_sq1)], 3))
-print(eval_sq1[!is.na(eval_sq1)])
-print(round(obj_sq1[!is.na(obj_sq1)], 4))
+print(round(quantile(time_sq1[!is.na(time_sq1)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq1[!is.na(eval_sq1)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq1[!is.na(obj_sq1)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_sq2))))
-print(round(time_sq2[!is.na(time_sq2)], 3))
-print(eval_sq2[!is.na(eval_sq2)])
-print(round(obj_sq2[!is.na(obj_sq2)], 4))
+print(round(quantile(time_sq2[!is.na(time_sq2)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq2[!is.na(eval_sq2)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq2[!is.na(obj_sq2)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_sq3))))
-print(round(time_sq3[!is.na(time_sq3)], 3))
-print(eval_sq3[!is.na(eval_sq3)])
-print(round(obj_sq3[!is.na(obj_sq3)], 4))
+print(round(quantile(time_sq3[!is.na(time_sq3)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq3[!is.na(eval_sq3)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq3[!is.na(obj_sq3)], probs = c(.5, .25, .75)), 4))
 
 print(paste("Number of failures:", sum(is.na(time_zal))))
-print(round(time_zal[!is.na(time_zal)], 3))
-print(eval_zal[!is.na(eval_zal)])
-print(round(obj_zal[!is.na(obj_zal)], 4))
+print(round(quantile(time_zal[!is.na(time_zal)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_zal[!is.na(eval_zal)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_zal[!is.na(obj_zal)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(time_zal2))))
+print(round(quantile(time_zal2[!is.na(time_zal2)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_zal2[!is.na(eval_zal2)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_zal2[!is.na(obj_zal2)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(time_zal3))))
+print(round(quantile(time_zal3[!is.na(time_zal3)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_zal3[!is.na(eval_zal3)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_zal3[!is.na(obj_zal3)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(time_dar))))
+print(round(quantile(time_dar, probs = c(.5, .25, .75)), 3))
+print(quantile(eval_dar, probs = c(.5, .25, .75)))
+print(round(quantile(obj_dar, probs = c(.5, .25, .75)), 4))
 
 ########################################
 ###### Example 2: Table-6 #############
@@ -242,12 +233,15 @@ for (d in 2:4)
 {
   load(file = paste("TruncatedBeta/Out/beta-objects", d, ".Rdata", sep=""))
   print(paste("Dataset:", d))
-  print(paste("F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
-  print(paste("F evals: ", fp_bqn1$fpevals, "Iterations: ", fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
-  print(paste("F evals: ", fp_sq1$fpeval, "Iterations: ", fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
-  print(paste("F evals: ", fp_sq2$fpeval, "Iterations: ", fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
-  print(paste("F evals: ", fp_sq3$fpeval, "Iterations: ", fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
-  print(paste("F evals: ", fp_zal$fpeval, "Iterations: ", fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
-  
-  
+  print(paste("MM Algo ------ F evals: ", iter_mm, "Time: ", round(time_mm, 3), "Negative log likelihood: ", round(obj_mm, 4)))
+  print(paste("BQN1 --------- F evals: ", fp_bqn1$fpevals, "Iterations",  fp_bqn1$iter, "Time: ", round(time_bqn1, 3), "Negative log likelihood: ", round(fp_bqn1$value.objfn, 4)))
+  print(paste("BQN2 --------- F evals: ", fp_bqn2$fpevals, "Iterations",  fp_bqn2$iter, "Time: ", round(time_bqn2, 3), "Negative log likelihood: ", round(fp_bqn2$value.objfn, 4)))
+  print(paste("LBQN --------- F evals: ", fp_lbqn$fpevals, "Iterations",  fp_lbqn$iter,"Time: ", round(time_lbqn, 3), "Negative log likelihood: ", round(fp_lbqn$value.objfn, 4)))
+  print(paste("SQUAREM1 ----- F evals: ", fp_sq1$fpeval, "Iterations",  fp_sq1$itr, "Time: ", round(time_sq1, 3), "Negative log likelihood: ", round(fp_sq1$value.objfn, 4)))
+  print(paste("SQUAREM2 ----- F evals: ", fp_sq2$fpeval, "Iterations",  fp_sq2$itr, "Time: ", round(time_sq2, 3), "Negative log likelihood: ", round(fp_sq2$value.objfn, 4)))
+  print(paste("SQUAREM3 ----- F evals: ", fp_sq3$fpeval, "Iterations",  fp_sq3$itr, "Time: ", round(time_sq3, 3), "Negative log likelihood: ", round(fp_sq3$value.objfn, 4)))
+  print(paste("ZAL1 ---------- F evals: ", fp_zal$fpeval, "Iterations",  fp_zal$itr, "Time: ", round(time_zal, 3), "Negative log likelihood: ", round(fp_zal$value.objfn, 4)))
+  print(paste("ZAL2 ---------- F evals: ", fp_zal2$fpeval, "Iterations",  fp_zal2$itr, "Time: ", round(time_zal2, 3), "Negative log likelihood: ", round(fp_zal2$value.objfn, 4)))
+  print(paste("DAAREM ------- F evals: ", fp_dar$fpeval, "Iterations",  dim(fp_dar$p.intermed)[1], "Time: ", round(time_dar, 3), "Negative log likelihood: ", round(fp_dar$value.objfn, 4)))
+
 }
