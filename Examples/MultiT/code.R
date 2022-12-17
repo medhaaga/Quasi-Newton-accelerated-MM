@@ -96,6 +96,53 @@ print(round(quantile(time_pxem[!is.na(time_pxem)], probs = c(.5, .25, .75)), 3))
 print(quantile(eval_pxem[!is.na(eval_pxem)], probs = c(.5, .25, .75)))
 print(round(quantile(obj_pxem[!is.na(obj_pxem)], probs = c(.5, .25, .75)), 4))
 
+####################################
+#### J & J QN1
+#####################################
+
+broy_fun <- function(x, func, ...){
+  return(func(x, ...) - x)
+}
+
+time_qn1 <- rep(NA, N)
+obj_qn1 <- rep(NA, N)
+eval_qn1 <- rep(NA, N)
+
+for (j in 1:N){
+  print(j)
+  start <- start_rep[j,]
+  now <- start
+  new <- start
+  G_now <- broy_fun(now,  func = update, n=n, dim=dim, data=data[j,,])
+  G_new <- G_now
+  H <- -diag(P)
+  itr <- 1
+  diff <- 100
+  start.time <- Sys.time()
+  while(diff > tol){
+    itr <- itr+1
+    new <- now - H%*%G_now
+    l_new <- likelihood(new, n=n, dim=dim, data=data[i,,])
+    if(is.na(l_new)){
+      print("Falling back to MM step")
+      new <- G_now + now}
+    G_new <- broy_fun(new,  func = update, n=n, dim=dim, data=data[j,,])
+    foo <- H%*%(G_new - G_now)
+    H <- H + (((new-now) - foo)/as.numeric(t(new-now) %*% foo))%*%(t(new-now)%*%H)
+    diff <- norm(new-now, "2")
+    now <- new
+    G_now <- G_new
+  }
+  end.time <- Sys.time()
+
+  time_qn1[j] <- end.time - start.time
+  obj_qn1[j] <- likelihood(new, n=n, dim=dim, data=data[j,,])
+  eval_qn1[j] <- itr
+}
+
+print(quantile(time_qn1, probs = c(.5, .25, .75)))
+print(quantile(eval_qn1, probs = c(.5, .25, .75)))
+print(quantile(obj_qn1, probs = c(.5, .25, .75)))
 
 ########################################
 ## BQN, q=1
@@ -109,7 +156,8 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data[i,,], control = list(qn=1, tol = tol, maxiter = 5e4, objfn.inc = .1))
+  fp <- BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data[i,,],
+            control = list(qn=1, tol = tol, maxiter = 5e4, objfn.inc = .1))
   end.time <- Sys.time()
 
   if(fp$convergence){
@@ -136,7 +184,8 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data[i,,],
+  fp <- BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim,
+            data=data[i,,],
              control = list(qn=2, tol = tol, maxiter = 5e3, objfn.inc = .1))
   end.time <- Sys.time()
 
@@ -164,7 +213,8 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- try(BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data[i,,],
+  fp <- try(BQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim,
+                data=data[i,,],
             control = list(qn=min(P,3), tol = tol, maxiter = 5e3, objfn.inc = .1)))
   end.time <- Sys.time()
   if(inherits(fp, "try-error")){
@@ -195,7 +245,8 @@ for (i in 1:N){
   print(i)
   start <- start_rep[i,]
   start.time <- Sys.time()
-  fp <- LBQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim, data=data[i,,],
+  fp <- LBQN(par = start, fixptfn = update, objfn = likelihood, n=n, dim=dim,
+             data=data[i,,],
               control = list(m=min(P, 10), tol = tol, maxiter = 1e3))
   end.time <- Sys.time()
   if(fp$convergence){
@@ -405,9 +456,9 @@ print(quantile(eval_dar, probs = c(.5, .25, .75)))
 print(round(quantile(obj_dar, probs = c(.5, .25, .75)), 4))
 
 
-save(time_mm, time_pxem, time_bqn1, time_bqn2, time_bqn3, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, time_zal2, time_zal3, time_dar,
-     eval_mm, eval_pxem, eval_bqn1, eval_bqn2, eval_bqn3, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal, eval_zal2, eval_zal3, eval_dar,
-     obj_mm, obj_pxem, obj_bqn1, obj_bqn2, obj_bqn3, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, obj_zal2, obj_zal3, obj_dar, file = "Out/multiT-objects.Rdata")
+save(time_mm, time_pxem, time_qn1, time_bqn1, time_bqn2, time_bqn3, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, time_zal2, time_zal3, time_dar,
+     eval_mm, eval_pxem, eval_qn1, eval_bqn1, eval_bqn2, eval_bqn3, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal, eval_zal2, eval_zal3, eval_dar,
+     obj_mm, obj_pxem, obj_qn1, obj_bqn1, obj_bqn2, obj_bqn3, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, obj_zal2, obj_zal3, obj_dar, file = "Out/multiT-objects.Rdata")
 
 load(file = "Out/multiT-objects.Rdata")
 

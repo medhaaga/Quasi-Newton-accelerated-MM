@@ -80,32 +80,53 @@ print(round(quantile(time_mm, c(.5, .25, .75)), 3))
 print(quantile(eval_mm, c(.5, .25, .75)))
 print(round(quantile(obj_mm, c(.5, .25, .75)), 5))
 
-####################################
-#### Broyden's bad method
-#####################################
+#########################################
+#### J & J QN1, Broyden's good method ####
+#########################################
 
 broy_fun <- function(x, func, ...){
   return(func(x, ...) - x)
 }
 
-time_broy <- rep(NA, N)
-obj_broy <- rep(NA, N)
-eval_broy <- rep(NA, N)
+time_qn1 <- rep(NA, N)
+obj_qn1 <- rep(NA, N)
+eval_qn1 <- rep(NA, N)
 
-for (i in 1:N){
-  print(i)
+for (j in 1:N){
+  print(j)
+  start <- truth + as.matrix(start.all[j,])
+  now <- start
+  new <- start
+  G_now <- broy_fun(now, func = update, A=A, a=a, L=L)
+  G_new <- G_now
+  H <- -diag(dim)
+  itr <- 1
+  diff <- 100
   start.time <- Sys.time()
-  broy = broyden(broy_fun, x0 = start.all[i,], func = update, A=A, a=a, L=L, maxiter = 5e4)
+  while(diff > tol){
+    itr <- itr+1
+    new <- now - H%*%G_now
+    l_new <- objective(new, A, a, L)
+    if(is.na(l_new)){
+      print("Falling back to MM step")
+      new <- G_now + now}
+    G_new <- broy_fun(new, func = update, A=A, a=a, L=L)
+    foo <- H%*%(G_new - G_now)
+    H <- H + (((new-now) - foo)/as.numeric(t(new-now) %*% foo))%*%(t(new-now)%*%H)
+    diff <- norm(new-now, "2")
+    now <- new
+    G_now <- G_new
+  }
   end.time <- Sys.time()
 
-  time_broy[i] <- end.time - start.time
-  obj_broy[i] <- objective(broy$zero, A=A, a=a, L=L)
-  eval_broy[i] <- broy$niter
+  time_qn1[j] <- end.time - start.time
+  obj_qn1[j] <- objective(new, A=A, a=a, L=L)
+  eval_qn1[j] <- itr
 }
 
-print(quantile(time_broy, probs = c(.5, .25, .75)))
-print(quantile(eval_broy, probs = c(.5, .25, .75)))
-print(quantile(obj_broy, probs = c(.5, .25, .75)))
+print(quantile(time_qn1, probs = c(.5, .25, .75)))
+print(quantile(eval_qn1, probs = c(.5, .25, .75)))
+print(quantile(obj_qn1, probs = c(.5, .25, .75)))
 
 ##################################################
 #### BQN, q=1
@@ -178,7 +199,7 @@ for (i in 1:N)
 
   start.time <- Sys.time()
   fp <- BQN(par = start, A=A, a=a, L=L, fixptfn = update, objfn = objective,
-             control = list(objfn.inc = 1e-2, qn=10, tol=1e-7, maxiter=1e5))
+             control = list( qn=10, tol=1e-7, maxiter=1e5))
   end.time <- Sys.time()
 
   time_bqn3[i] <- end.time - start.time

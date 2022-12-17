@@ -45,21 +45,19 @@ update <- function(x, A, B, dir = c("ascent", "descent")){
   uBv <- t(u) %*% B %*% v
   vBu <- t(v) %*% B %*% u
 
-  a <- (vAv*vBu + vAu*vBv + vAv*uBv) - (vAv*vBu + uAv*vBv + vAu*vBv)
-  b <- (vAv*uBu + vAu*vBu + vAu*uBv) - (vAu*vBu + uAv*vBu + uAu*vBv)
-  c <- (vAu*uBu) - (uAu*vBu)
+  a <- (vAv*vBu - uAv*vBv )
+  b <- (vAv*uBu - uAu*vBv)
+  c <- (vAu*uBu - uAu*vBu)
 
   delta <- (b^2 - 4*a*c)
   if(delta > 0){ # first case D>0
     x_1 = (-b+sqrt(delta))/(2*a)
     x_2 = (-b-sqrt(delta))/(2*a)
     C <- c(x_1,x_2)
-  }
-  else if(delta == 0){ # second case D=0
+  } else if(delta == 0){ # second case D=0
     x = -b/(2*a)
     C <- (c(x,x))
-  }
-  else {stop("No roots")} # third case D<0
+  } else {stop("No roots")} # third case D<0
 
   x1 <- u + C[1]*v
   x2 <- u + C[2]*v
@@ -73,14 +71,12 @@ update <- function(x, A, B, dir = c("ascent", "descent")){
   if(R1 > R2) {
     ascent <- x1
     descent <- x2
-  }
-  else {
+  } else {
     ascent <- x2
     descent <- x1
   }
 
-  if (dir == "ascent") {return(ascent)}
-  else {return(descent)}
+  if (dir == "ascent") {return(ascent)} else {return(descent)}
 
 }
 

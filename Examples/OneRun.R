@@ -226,7 +226,7 @@ print(quantile(eval_dar, probs = c(.5, .25, .75)))
 print(round(quantile(obj_dar, probs = c(.5, .25, .75)), 4))
 
 ########################################
-###### Example 2: Table-6 #############
+###### Example 2: Appendix:Table-2 #####
 ########################################
 
 for (d in 2:4)
@@ -245,3 +245,55 @@ for (d in 2:4)
   print(paste("DAAREM ------- F evals: ", fp_dar$fpeval, "Iterations",  dim(fp_dar$p.intermed)[1], "Time: ", round(time_dar, 3), "Negative log likelihood: ", round(fp_dar$value.objfn, 4)))
 
 }
+
+########################################
+###### Example 5: Appendix:Table-4 #####
+########################################
+
+
+load(file = "Poisson/Out/poisson-objects.Rdata")
+
+print(paste("Number of failures:", sum(is.na(eval_mm))))
+print(round(quantile(time_mm, probs = c(.5, .25, .75)), 3))
+print(quantile(eval_mm, probs = c(.5, .25, .75)))
+print(round(quantile(obj_mm, probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_bqn1))))
+print(round(quantile(time_bqn1[!is.na(time_bqn1)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_bqn1[!is.na(eval_bqn1)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_bqn1[!is.na(obj_bqn1)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_bqn2))))
+print(round(quantile(time_bqn2[!is.na(time_bqn2)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_bqn2[!is.na(eval_bqn2)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_bqn2[!is.na(obj_bqn2)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_lbqn))))
+print(round(quantile(time_lbqn[!is.na(time_lbqn)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_lbqn[!is.na(eval_lbqn)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_lbqn[!is.na(obj_lbqn)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_sq1))))
+print(round(quantile(time_sq1[!is.na(time_sq1)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq1[!is.na(eval_sq1)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq1[!is.na(obj_sq1)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_sq2))))
+print(round(quantile(time_sq2[!is.na(time_sq2)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq2[!is.na(eval_sq2)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq2[!is.na(obj_sq2)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_sq3))))
+print(round(quantile(time_sq3[!is.na(time_sq3)], probs = c(.5, .25, .75)), 3))
+print(quantile(eval_sq3[!is.na(eval_sq3)], probs = c(.5, .25, .75)))
+print(round(quantile(obj_sq3[!is.na(obj_sq3)], probs = c(.5, .25, .75)), 4))
+
+print(paste("Number of failures:", sum(is.na(eval_zal))))
+
+print(paste("Number of failures:", sum(is.na(eval_zal2))))
+
+print(paste("Number of failures:", sum(is.na(eval_dar))))
+print(round(quantile(time_dar, probs = c(.5, .25, .75)), 3))
+print(quantile(eval_dar, probs = c(.5, .25, .75)))
+print(round(quantile(obj_dar, probs = c(.5, .25, .75)), 4))
+

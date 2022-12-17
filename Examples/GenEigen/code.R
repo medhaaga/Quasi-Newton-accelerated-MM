@@ -17,13 +17,14 @@ A <- C + t(C)
 B <- D %*% t(D)
 
 N <- 10
-start_rep <- matrix(rnorm(N*dim, mean = 0, sd = 100), nrow = N, ncol = dim)
-tol <- 1e-6
+start_rep <- matrix(rnorm(N*dim, mean = 0, sd = 10), nrow = N, ncol = dim)
+tol <- 1e-5
 D <- c("descent", "ascent")
 
 for (d in 1:2)
 {
   dir <- D[d]
+
   ###########################################
   ## Unaccelerated MM Algorithm
   ###########################################
@@ -59,35 +60,53 @@ for (d in 1:2)
   print(quantile((-1)^(d+1)*obj_mm, probs = c(.5, .25, .75)))
 
   ####################################
-  #### Broyden's bad method
+  #### J & J QN1
   #####################################
 
   broy_fun <- function(x, func, ...){
     return(func(x, ...) - x)
   }
 
-  time_broy <- rep(NA, N)
-  obj_broy <- rep(NA, N)
-  eval_broy <- rep(NA, N)
-  norm_broy <- rep(NA, N)
+  time_qn1 <- rep(NA, N)
+  obj_qn1 <- rep(NA, N)
+  eval_qn1 <- rep(NA, N)
 
-  for (i in 1:N){
-    print(i)
+  for (j in 1:N){
+    print(j)
+    start <- start_rep[j,]
+    now <- start
+    new <- start
+    G_now <- broy_fun(now, func = update, A=A, B=B, dir=dir)
+    G_new <- G_now
+    H <- -diag(dim)
+    itr <- 1
+    diff <- 100
     start.time <- Sys.time()
-
-    broy = broyden(broy_fun, x0 = start_rep[i,], func = update, A=A, B=B, dir=dir, maxiter = 5e4, tol = tol)
+    while(diff > tol){
+      itr <- itr+1
+      new <- now - H%*%G_now
+      l_new <- rayleigh(new, A, B, dir)
+       if(is.na(l_new)){
+         print("Falling back to MM step")
+         new <- G_now + now}
+      G_new <- broy_fun(new,  func = update, A=A, B=B, dir=dir)
+      foo <- H%*%(G_new - G_now)
+      H <- H + (((new-now) - foo)/as.numeric(t(new-now) %*% foo))%*%(t(new-now)%*%H)
+      diff <- norm(new-now, "2")
+      now <- new
+      G_now <- G_new
+    }
     end.time <- Sys.time()
 
-    time_broy[i] <- end.time - start.time
-    obj_broy[i] <- rayleigh(broy$zero, A, B, dir)
-    eval_broy[i] <- broy$niter
-    norm_broy[i] <- broy$fnorm
+    time_qn1[j] <- end.time - start.time
+    obj_qn1[j] <- rayleigh(new, A, B, dir)
+    eval_qn1[j] <- itr
   }
 
-  print(norm_broy)
-  print(quantile(time_broy, probs = c(.5, .25, .75)))
-  print(quantile(eval_broy, probs = c(.5, .25, .75)))
-  print(quantile((-1)^(d+1)*obj_broy, probs = c(.5, .25, .75)))
+  print(quantile(time_qn1, probs = c(.5, .25, .75)))
+  print(quantile(eval_qn1, probs = c(.5, .25, .75)))
+  print(quantile(obj_qn1, probs = c(.5, .25, .75)))
+
 
 ########################################
   ## BQN, q=1
@@ -100,7 +119,8 @@ for (d in 1:2)
   for (i in 1:N){
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=1, tol = tol, maxiter = 5e4, obj.stop=TRUE))
+    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+              control = list(qn=1, tol = tol, maxiter = 5e4, objfn.inc=0.1))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -126,7 +146,8 @@ for (d in 1:2)
   for (i in 1:N){
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=2, tol = tol, maxiter = 5e4, obj.stop = TRUE))
+    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+              control = list(qn=2, tol = tol, maxiter = 5e4, objfn.inc=0.001))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -142,7 +163,7 @@ for (d in 1:2)
   print(quantile((-1)^(d+1)*obj_bqn2, probs = c(.5, .25, .75)))
 
   ########################################
-  ## BQN, q=min(p,10)
+  ## BQN, q=5
   ########################################
 
   time_bqn3 <- rep(NA, N)
@@ -152,7 +173,8 @@ for (d in 1:2)
   for (i in 1:N){
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(qn=5, tol = tol, maxiter = 5e4))
+    fp <- BQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+              control = list(qn=5, tol = tol, maxiter = 5e4, objfn.inc=1))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -179,7 +201,8 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- LBQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, control = list(m=10, tol = tol, maxiter = 5e4, intermed = TRUE))
+    fp <- LBQN(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+               control = list(m=10, tol = tol, maxiter = 5e4, objfn.inc=0.01))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -206,7 +229,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "squarem", control.method = list(K=1, version=1), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "squarem", control.method = list(K=1, version=1, objfn.inc=0.01),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -233,7 +258,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "squarem", control.method = list(K=1, version=2), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "squarem", control.method = list(K=1, version=2, objfn.inc=0.01),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -261,7 +288,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "squarem", control.method = list(K=1, version=3), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "squarem", control.method = list(K=1, version=3, objfn.inc=0.01),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -288,7 +317,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "qn", control.method = list(qn=2), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "qn", control.method = list(qn=2),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
     if(fp$convergence){
       time_zal[i] <- end.time - start.time
@@ -314,7 +345,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "qn", control.method = list(qn=2), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "qn", control.method = list(qn=2),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
     if(fp$convergence){
       time_zal2[i] <- end.time - start.time
@@ -340,7 +373,9 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir, method = "qn", control.method = list(qn=min(dim,10)), control.run = list(tol = tol, maxiter = 5e4))
+    fp <- turboem(par = start, fixptfn = update, objfn = rayleigh, A=A, B=B, dir=dir,
+                  method = "qn", control.method = list(qn=5),
+                  control.run = list(tol = tol, maxiter = 5e4))
     end.time <- Sys.time()
 
     if(fp$convergence){
@@ -367,7 +402,8 @@ for (d in 1:2)
     print(i)
     start <- start_rep[i,]
     start.time <- Sys.time()
-    fp <- daarem(par = start, fixptfn = update, objfn = daarem.objective, A=A, B=B, dir=dir, control = list(tol = tol, maxiter = 5e4))
+    fp <- daarem(par = start, fixptfn = update, objfn = daarem.objective, A=A, B=B,
+                 dir=dir, control = list(tol = tol, maxiter = 5e4, mon.tol=0.01))
     end.time <- Sys.time()
 
     time_dar[i] <- end.time - start.time
@@ -376,13 +412,13 @@ for (d in 1:2)
 
   }
 
-  print(round(time_dar[1], 3))
-  print(round(eval_dar[1], 3))
-  print(round((-1)^(d+1)*obj_dar[1], 3))
+  print(quantile(round(time_dar[1], 3)))
+  print(quantile(round(eval_dar[1], 3)))
+  print(quantile(round((-1)^(d+1)*obj_dar[1], 3)))
 
-  save(time_mm, time_bqn1, time_bqn2, time_bqn3, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, time_zal2, time_zal3, time_dar,
-       eval_mm, eval_bqn1, eval_bqn2, eval_bqn3, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal, eval_zal2, eval_zal3, eval_dar,
-       obj_mm, obj_bqn1, obj_bqn2, obj_bqn3, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, obj_zal2, obj_zal3, obj_dar, file = paste("Out/eigen-objects_", dir, "_sd1e2.Rdata", sep = ""))
+  save(time_mm, time_qn1, time_bqn1, time_bqn2, time_bqn3, time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, time_zal2, time_zal3, time_dar,
+       eval_mm, eval_qn1, eval_bqn1, eval_bqn2, eval_bqn3, eval_lbqn, eval_sq1, eval_sq2, eval_sq3, eval_zal, eval_zal2, eval_zal3, eval_dar,
+       obj_mm, obj_qn1, obj_bqn1, obj_bqn2, obj_bqn3, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_zal, obj_zal2, obj_zal3, obj_dar, file = paste("Out/eigen-objects_", dir, "_sd1e2.Rdata", sep = ""))
 
 }
 
@@ -393,6 +429,7 @@ for (d in 1:2){
 
   print(paste("Case = ", dir))
   print(paste("MM Algo ---------- Time: ", round(quantile(time_mm[1], .5), 3),  "Iterations: ", quantile(eval_mm[1], .5), "Negative log likelihood: ", round(quantile(obj_mm[1], .5), 4)))
+  print(paste("QN1 ------------- Time: ", round(quantile(time_qn1[1], .5), 3), "Iterations: ", quantile(eval_qn1[1], .5), "Negative log likelihood: ", round(quantile(obj_qn1[1], .5), 4)))
   print(paste("BQN1 ------------- Time: ", round(quantile(time_bqn1[1], .5), 3), "Iterations: ", quantile(eval_bqn1[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn1[1], .5), 4)))
   print(paste("BQN2 ------------- Time: ", round(quantile(time_bqn2[1], .5), 3), "Iterations: ", quantile(eval_bqn2[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn2[1], .5), 4)))
   print(paste("BQN3 ------------- Time: ", round(quantile(time_bqn3[1], .5), 3), "Iterations: ", quantile(eval_bqn3[1], .5), "Negative log likelihood: ", round(quantile(obj_bqn3[1], .5), 4)))

@@ -64,21 +64,47 @@ for (h in 1:4)
   dev.off()
 
   ####################################
-  #### Broyden's bad method
+  #### J & J QN1
   #####################################
 
   broy_fun <- function(x, func, ...){
     return(func(x, ...) - x)
   }
-
+  now <- as.matrix(start, ncol=1)
+  new <- start
+  G_now <- broy_fun(now, func = update, batch = 4, freq1=freq1, freq2=freq2,
+                    freq3=freq3, freq4=freq4)
+  G_new <- G_now
+  qn1_chain <- matrix(now, ncol = 1)
+  H <- -diag(p)
+  itr <- 1
+  diff <- 100
   start.time <- Sys.time()
-  broy = broyden(broy_fun, x0 = start, func = update, batch = 4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4, maxiter = 5e4, tol = tol)
+  while(diff > tol){
+    itr <- itr+1
+    new <- now - H%*%G_now
+    l_new <- log.likelihood(new, batch, freq1, freq2, freq3, freq4)
+    if(is.na(l_new)){
+      print("Falling back to MM step")
+      new <- G_now + now}
+    qn1_chain <- cbind(qn1_chain, new)
+    G_new <- broy_fun(new, func = update, batch = 4, freq1=freq1, freq2=freq2,
+                      freq3=freq3, freq4=freq4)
+    foo <- H%*%(G_new - G_now)
+    H <- H + (((new-now) - foo)/as.numeric(crossprod((new-now), foo)))%*%(t(new-now)%*%H)
+    diff <- norm(new-now, "2")
+    now <- new
+    G_now <- G_new
+  }
   end.time <- Sys.time()
 
-  time_broy <- end.time - start.time
-  obj_broy <- log.likelihood(broy$zero, batch = 4, freq1=freq1, freq2=freq2, freq3=freq3, freq4=freq4)
-  eval_broy <- broy$niter
-  print(paste("Iterations: ", eval_broy, "Time: ", round(time_broy, 3), "Negative log likelihood: ", round(obj_broy, 4)))
+  time_qn1 <- end.time - start.time
+  obj_qn1 <- log.likelihood(new, batch, freq1, freq2, freq3, freq4)
+  iter_qn1 <- itr
+
+  print(paste("F evals: ", iter_qn1, "Time: ", round(time_qn1, 3), "Negative log likelihood: ", round(obj_qn1, 5)))
+  filled.contour(x,y,z,plot.axes = { axis(1); axis(2); points(qn1_chain[1,],qn1_chain[2,], col = c(rep(1,(itr-1)), 2), pch = c(rep(1,(itr-1)), 19), cex = c(rep(2,(itr-1)), 2.5))}, color.palette = function(n) hcl.colors(n, "RdPu", rev = TRUE), xlab = expression(pi), ylab = expression(alpha))
+
 
   ########################################
   ## BQN, q=1
