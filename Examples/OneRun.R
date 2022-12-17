@@ -12,11 +12,11 @@ load(file = "Quadratic/Out/quad-objects_sq1e3.Rdata")
 
 print(quantile(eval_mm, probs = c(.5, .25, .75)))
 print(round(quantile(time_mm, probs = c(.5, .25, .75)), 3))
-print(round(quantile(obj_mm, probs = c(.5, .25, .75)), 4))
+print(round(quantile(obj_mm, probs = c(.5, .25, .75)), 5))
 
 print(round(quantile(time_bqn1, c(.5, .25, .75)), 3))
 print(quantile(eval_bqn1, c(.5, .25, .75)))
-print(round(quantile(obj_bqn1, c(.5, .25, .75)), 4))
+print(round(quantile(obj_bqn1, c(.5, .25, .75)), 5))
 
 print(round(quantile(time_bqn2, c(.5, .25, .75)), 3))
 print(quantile(eval_bqn2, c(.5, .25, .75)))
@@ -150,7 +150,7 @@ for (d in 1:2)
   print(paste("SQUAREM3 --------- Time: ", round(quantile(time_sq3[1], .5), 3), "Iterations: ", quantile(eval_sq3[1], .5), "Negative log likelihood: ", round(quantile(obj_sq3[1], .5), 4)))
   print(paste("ZAL, q=1 --------- Time: ", round(quantile(time_zal[1], .5), 3), "Iterations: ", quantile(eval_zal[1], .5), "Negative log likelihood: ", round(quantile(obj_zal[1], .5), 4)))
   print(paste("ZAL, q=2 --------- Time: ", round(quantile(time_zal2[1], .5), 3), "Iterations: ", quantile(eval_zal2[1], .5), "Negative log likelihood: ", round(quantile(obj_zal2[1], .5), 4)))
-  print(paste("ZAL, q=min(p,10)-- Time: ", round(quantile(time_zal3[1], .5), 3), "Iterations: ", quantile(eval_zal3[1], .5), "Negative log likelihood: ", round(quantile(obj_zal3[1], .5), 4)))
+  print(paste("ZAL, q=5-- Time: ", round(quantile(time_zal3[1], .5), 3), "Iterations: ", quantile(eval_zal3[1], .5), "Negative log likelihood: ", round(quantile(obj_zal3[1], .5), 4)))
   print(paste("DAAREM ----------- Time: ", round(quantile(time_dar[1], .5), 3), "Iterations: ", quantile(eval_dar[1], .5), "Negative log likelihood: ", round(quantile(obj_dar[1], .5), 4)))
 }
 

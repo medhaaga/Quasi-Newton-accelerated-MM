@@ -447,7 +447,7 @@ for (d in 1:2){
 
 
 ###########################################################
-###### Creating scatter plots #############################
+########## Creating boxplots  #############################
 ###########################################################
 
 for ( d in 1:2)
@@ -456,30 +456,16 @@ for ( d in 1:2)
 
   load(paste("Out/eigen-objects_", dir, "_sd1e2.Rdata", sep = ""))
 
-  time_range <- range(time_mm, time_bqn1, time_lbqn, time_sq1, time_zal2, time_dar)
-  eval_range <- range(eval_mm, eval_bqn1, eval_lbqn, eval_sq1,  eval_zal2, eval_dar)
-  obj_range <- (-1)^(d+1)*range(obj_mm, obj_bqn1, obj_lbqn, obj_sq1, obj_zal2, -obj_dar)
+  time_df = data.frame("MM" = time_mm, "BQN1" = time_bqn1, "LBQN" = time_lbqn,
+                       "SqS1" = time_sq1, "ZAL" = time_zal, "DAAREM" = time_dar)
+  eval_df = data.frame("MM" = eval_mm, "BQN1" = eval_bqn1, "LBQN" = eval_lbqn,
+                       "SqS1" = eval_sq1, "ZAL" = eval_zal, "DAAREM" = eval_dar)
 
-  pdf(file = paste("Out/eigen-objVSeval_", dir, ".pdf", sep = ""), height = 5, width = 7)
-  par( mar=c(4, 4, 4, 9), xpd = TRUE)
-  plot(eval_bqn1, (-1)^(d+1)*obj_bqn1, pch=19, cex=1.2, col  ="red", xlim = eval_range, ylim = obj_range, ylab = "Objective Value", xlab = "Number of F evaluations")
-  points(eval_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.2, col = "blue")
-  points(eval_sq1, (-1)^(d+1)*obj_sq1, pch=19, cex=1.2, col = "pink")
-  points(eval_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.2, col = "orange")
-  points(eval_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.2, col = "black")
-  points(eval_dar, (-1)^(d)*obj_dar, pch=19, cex=1.2, col = "green3")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange", "green3"), pch=19, cex=1.2, legend  =c("MM", "B1", "LBQN", "SQ1", "ZAL", "DAAR"))
+  pdf(file = paste("Out/eigen-objVSeval_", dir, ".pdf", sep = ""), height = 5, width = 10)
+  par(mfrow = c(1,2))
+  boxplot(time_df)
+  boxplot(eval_df)
   dev.off()
 
-  pdf(file = paste("Out/eigen-objVStime_", dir, ".pdf", sep = ""), height = 5, width = 7)
-  par(mar=c(4, 4, 4, 9), xpd = TRUE)
-  plot(time_bqn1, (-1)^(d+1)*obj_bqn2, pch=19, cex=1.2, col  ="red", xlim = time_range, ylim = obj_range, ylab = "Objective Value", xlab = "Time (s)")
-  points(time_lbqn, (-1)^(d+1)*obj_lbqn, pch=19, cex=1.2, col = "blue")
-  points(time_sq1, (-1)^(d+1)*obj_sq1, pch=19, cex=1.2, col = "pink")
-  points(time_zal, (-1)^(d+1)*obj_zal, pch=19, cex=1.2, col = "orange")
-  points(time_mm, (-1)^(d+1)*obj_mm, pch=19, cex=1.2, col = "black")
-  points(time_dar, (-1)^(d)*obj_dar, pch=19, cex=1.2, col = "green3")
-  legend("topright", inset = c(-.4, 0), col = c("black", "red", "blue", "pink", "orange", "green3"), pch=19, cex=1.2, legend  =c("MM", "B1", "LBQN", "SQ1", "ZAL", "DAAR"))
-  dev.off()
 }
 
