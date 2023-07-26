@@ -38,7 +38,7 @@ truth <- - solve(A) %*% a
 true.obj <- objective(truth, A, a, L)
 N <- 10
 start.all <- matrix(rnorm(dim*N, mean = 0, sd = 1000), nrow = N, ncol = dim)
-tol = 1e-3
+tol = 1e-7
 
 
 ###############################################
@@ -48,37 +48,37 @@ tol = 1e-3
 time_mm <- rep(0,N)
 eval_mm <- rep(0,N)
 obj_mm <- rep(0, N)
-#
-# for (j in 1:N)
-# {
-#   print(j)
-#
-#   start <- truth + as.matrix(start.all[j,])
-#   now <- start
-#   new <- start
-#   iter <- 1
-#   diff <- 100
-#
-#
-#   start.time <- Sys.time()
-#   while(diff > tol)
-#   {
-#     new <- update(now, A, a, L)
-#     diff <- norm(new-now, type = "2")
-#     now <- new
-#     iter <- iter +1
-#   }
-#   end.time <- Sys.time()
-#
-#   time_mm [j] <- end.time - start.time
-#   eval_mm[j] <- iter
-#   obj_mm[j] <- objective(new, A, a, L)
-#
-# }
-#
-# print(round(quantile(time_mm, c(.5, .25, .75)), 3))
-# print(quantile(eval_mm, c(.5, .25, .75)))
-# print(round(quantile(obj_mm, c(.5, .25, .75)), 5))
+
+for (j in 1:N)
+{
+  print(j)
+
+  start <- truth + as.matrix(start.all[j,])
+  now <- start
+  new <- start
+  iter <- 1
+  diff <- 100
+
+
+  start.time <- Sys.time()
+  while(diff > tol)
+  {
+    new <- update(now, A, a, L)
+    diff <- norm(new-now, type = "2")
+    now <- new
+    iter <- iter +1
+  }
+  end.time <- Sys.time()
+
+  time_mm [j] <- end.time - start.time
+  eval_mm[j] <- iter
+  obj_mm[j] <- objective(new, A, a, L)
+
+}
+
+print(round(quantile(time_mm, c(.5, .25, .75)), 3))
+print(quantile(eval_mm, c(.5, .25, .75)))
+print(round(quantile(obj_mm, c(.5, .25, .75)), 5))
 
 #########################################
 #### J & J QN1, Broyden's good method ####

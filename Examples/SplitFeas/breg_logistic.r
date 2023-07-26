@@ -349,7 +349,7 @@ save(time_mm, time_bqn1, time_lbqn, time_lbqn2, time_sq1, time_sq2, time_sq3, ti
      objlist_mm, objlist_bqn1, objlist_lbqn, objlist_lbqn2, objlist_sq1, objlist_sq2, objlist_sq3, objlist_dar, objlist_feas, file = "Out/exp_objects.Rdata")
 
 
-
+load(file = "Out/exp_objects.Rdata")
 
 y_range <- range(log(objlist_bqn1[-(1:3),-(1:ncol(objlist_bqn1)-1)]), log(objlist_lbqn[-(1:3),-(1:ncol(objlist_lbqn)-1)]),
                  log(objlist_lbqn2[-(1:3),-(1:ncol(objlist_lbqn2)-1)]), log(objlist_feas[-(1:3)]),
@@ -369,6 +369,7 @@ dev.off()
 
 pdf(file = "Out/split_feas-timeVSexp.pdf", height=5, width=7)
 yrange = range(time_bqn1, time_lbqn, time_sq1, time_sq2, time_sq3, time_dar, time_feas[!is.na(time_feas)])
+
 plot((1:N), time_bqn1, type='o', lwd=2, col="aquamarine3", ylim=yrange, xlab = "Experiment", ylab="Time (in min)", pch=1)
 lines((1:N), time_lbqn, type='o', lwd=2, col="coral", pch=2)
 lines((1:N), time_sq1, type='o', lwd=2, col="cadetblue1", pch=3)
@@ -379,14 +380,15 @@ legend("topright", pch=(1:5), legend = c("BQN", "L-BQN", "SQ1", "DAAREM", "ZAL")
 dev.off()
 pdf(file = "Out/split_feas-objVSexp.pdf", height=5, width=7)
 yrange = range(obj_mm, obj_bqn1, obj_lbqn, obj_sq1, obj_sq2, obj_sq3, obj_dar)
-plot((1:N), obj_mm, type='o', lwd=2, col="darkolivegreen3", ylim=yrange, pch=1, xlab = "Experiment", ylab = "Objective value")
-lines((1:N), obj_bqn1, type='o', lwd=2, col="aquamarine3", pch=2)
-lines((1:N), obj_sq1, type='o', lwd=2, col="cadetblue1", pch=4)
-lines((1:N), obj_feas, type='o', lwd=2, col="cadetblue", pch=6)
-lines((1:N), obj_lbqn, type='o', lwd=2, col="coral", pch=3)
-lines((1:N), obj_dar, type='o', lwd=2, col="darkgoldenrod1", pch=5)
-legend("topleft", pch=(1:6), legend = c("MM", "BQN", "L-BQN", "SQ1", "DAAREM", "ZAL"),
-       col = c("darkolivegreen3", "aquamarine3", "coral", "cadetblue1", "darkgoldenrod1", "cadetblue"), lwd=2)
+plot((1:N), obj_mm, type='o', lwd=2, col="darkolivegreen3", ylim=yrange, pch=6, xlab = "Experiment", ylab = "Objective value")
+lines((1:N), obj_bqn1, type='o', lwd=2, col="aquamarine3", pch=1)
+lines((1:N), obj_lbqn, type='o', lwd=2, col="coral", pch=2)
+lines((1:N), obj_sq1, type='o', lwd=2, col="cadetblue1", pch=3)
+lines((1:N), obj_dar, type='o', lwd=2, col="darkgoldenrod1", pch=4)
+lines((1:N), obj_feas, type='o', lwd=2, col="darkgreen", pch=5)
+lines((1:N), obj_mm, type='o', lwd=2, col="darkolivegreen3", pch=6)
+legend("topleft", pch=c(6,(1:5)), legend = c("MM", "BQN", "L-BQN", "SQ1", "DAAREM", "ZAL"),
+       col = c("darkolivegreen3", "aquamarine3", "coral", "cadetblue1", "darkgoldenrod1", "darkgreen"), lwd=2)
 dev.off()
 
 

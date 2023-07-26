@@ -2,7 +2,7 @@
 ######### Truncated beta binomial #############
 ###############################################
 
-rm(list = ls())
+rm(list = ls()) 
 set.seed(1)
 library(SQUAREM)
 library(quasiNewtonMM)

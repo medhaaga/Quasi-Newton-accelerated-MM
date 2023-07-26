@@ -140,7 +140,7 @@ for (j in 1:N){
   eval_qn1[j] <- itr
 }
 
-print(quantile(time_qn1, probs = c(.5, .25, .75)))
+print(round(quantile(time_qn1, probs = c(.5, .25, .75)), 3))
 print(quantile(eval_qn1, probs = c(.5, .25, .75)))
 print(quantile(obj_qn1, probs = c(.5, .25, .75)))
 

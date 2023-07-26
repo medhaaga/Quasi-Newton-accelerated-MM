@@ -220,7 +220,8 @@ for (i in 1:N){
 
 print(round(quantile(time_dar, c(.5, .25, .75)), 3))
 print(quantile(eval_dar, c(.5, .25, .75)))
-print(round(quantile(obj_dar, c(.5, .25, .75)), 4))
+print(round(quantile(obj_da
+                     r, c(.5, .25, .75)), 4))
 
 
 save(time_lbqn, time_sq1, time_sq2, time_sq3, time_zal, time_zal2, time_dar,
