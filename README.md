@@ -10,6 +10,7 @@ This repository contains the code for all examples in Agarwal and Xu (2021). The
 2. Truncated beta binomial 
 3. Generalized eigenvalues
 4. Multivariate t-distribution
+5. Sparse Logistic Regression
 
 To run the optimization routine using all methods, run `code.R` files in individual examples folder. This may take some time. The R objects are stored `Out` folder for each example.
 
