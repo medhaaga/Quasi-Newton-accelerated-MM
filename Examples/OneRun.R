@@ -226,6 +226,58 @@ print(quantile(eval_dar, probs = c(.5, .25, .75)))
 print(round(quantile(obj_dar, probs = c(.5, .25, .75)), 4))
 
 ########################################
+###### Example 5: Table - 6 #############
+########################################
+
+load(file = "Logistic/Out/exp_objects.Rdata")
+
+## Vanilla MM
+print(round(quantile(eval_mm[!is.na(eval_mm)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(time_mm[!is.na(time_mm)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(obj_mm[!is.na(obj_mm)], c(.5, 0.25, 0.75)), 3))
+
+## BQN, q=2
+print(quantile(round(eval_bqn1[!is.na(eval_bqn1)],1), c(.25,.5, 0.75)))
+print(quantile(round(time_bqn1[!is.na(time_bqn1)],2), c(.25,.5, 0.75)))
+print(quantile(round(obj_bqn1[!is.na(obj_bqn1)], 1), c(.25,.5, 0.75)))
+
+## LBQN, m=5
+print(round(quantile(eval_lbqn[!is.na(eval_lbqn)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(time_lbqn[!is.na(time_lbqn)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(obj_lbqn[!is.na(obj_lbqn)], c(.5, 0.25, 0.75)), 3))
+
+## LBQN, m=10
+print(round(quantile(eval_lbqn2[!is.na(eval_lbqn2)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(time_lbqn2[!is.na(time_lbqn2)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(obj_lbqn2[!is.na(obj_lbqn2)], c(.5, 0.25, 0.75)), 3))
+
+## SQUAREM-1
+print(quantile(round(eval_sq1[!is.na(eval_sq1)],0), c(.5, 0.25, 0.75)))
+print(quantile(round(time_sq1[!is.na(time_sq1)],2), c(.5, 0.25, 0.75)))
+print(quantile(round(obj_sq1[!is.na(obj_sq1)], 2), c(.5, 0.25, 0.75)))
+
+## SQUAREM-2
+print(quantile(round(eval_sq2[!is.na(eval_sq2)],0), c(.5, 0.25, 0.75)))
+print(quantile(round(time_sq2[!is.na(time_sq2)],2), c(.5, 0.25, 0.75)))
+print(quantile(round(obj_sq2[!is.na(obj_sq2)], 2), c(.5, 0.25, 0.75)))
+
+## SQUAREM-3
+print(quantile(round(eval_sq3[!is.na(eval_sq3)],0), c(.5, 0.25, 0.75)))
+print(quantile(round(time_sq3[!is.na(time_sq3)],2), c(.5, 0.25, 0.75)))
+print(quantile(round(obj_sq3[!is.na(obj_sq3)], 2), c(.5, 0.25, 0.75)))
+
+## DAAREM
+print(round(quantile(eval_dar[!is.na(eval_dar)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(time_dar[!is.na(time_dar)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(obj_dar[!is.na(obj_dar)], c(.5, 0.25, 0.75)), 3))
+
+## ZAL
+print(round(quantile(eval_feas[!is.na(eval_feas)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(time_feas[!is.na(time_feas)], c(.5, 0.25, 0.75)), 3))
+print(round(quantile(obj_feas[!is.na(obj_feas)], c(.5, 0.25, 0.75)), 3))
+
+
+########################################
 ###### Example 2: Appendix:Table-2 #####
 ########################################
 

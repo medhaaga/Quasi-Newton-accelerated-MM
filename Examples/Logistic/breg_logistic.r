@@ -217,28 +217,6 @@ print(round(quantile(eval_lbqn2[!is.na(eval_lbqn2)], c(.5, 0.25, 0.75)), 3))
 print(round(quantile(time_lbqn2[!is.na(time_lbqn2)], c(.5, 0.25, 0.75)), 3))
 print(round(quantile(obj_lbqn2[!is.na(obj_lbqn2)], c(.5, 0.25, 0.75)), 3))
 
-#############################################
-############ LBQN, m=2  ##############
-#############################################
-
-
-time_lbqn1 <- rep(NA, nStarts)
-obj_lbqn1 <- rep(NA, nStarts)
-eval_lbqn1 <- rep(NA,nStarts)
-sol_lbqn1 <- matrix(NA, n, nStarts)
-
-for (i in 1:nStarts){
-  start <- Sys.time()
-  fp <- nmsfp_lbqn(x0[i,], v, plist1, y, f, df, h, dh, dd, woodbury=woodbury, 
-                   m=2, tol=tol, max_iter=max_iter, objfn.inc = .01, intermed=TRUE)
-  time_lbqn1[i] <- Sys.time() - start
-  sol_lbqn1[,i] <- fp$x
-  obj_lbqn1[i] <- fp$loss
-  objlist_lbqn1 <- fp$Xhist
-  eval_lbqn1[i] <- fp$fevals
-}
-save(time_lbqn1, sol_lbqn1, obj_lbqn1, objlist_lbqn1, eval_lbqn1, file = "Out/objects_lbqn1.Rdata")
-
 
 #############################################
 ################ SQUAREM - 1  ###############
